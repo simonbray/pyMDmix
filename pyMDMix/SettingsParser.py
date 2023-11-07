@@ -42,7 +42,7 @@ import os
 import os.path as osp
 import configparser
 from . import tools as T
-import string
+#import string
 
 class SettingsError( Exception ):
     pass
@@ -105,7 +105,7 @@ class Setting(object):
         try:
             if not self.value is None:
                 if vtype == list and isinstance(self.value, str):
-                    self.value = list(map(string.strip, self.value.split(',')))
+                    self.value = [n.strip() for n in self.value.split(',')]  # list(map(strip, self.value.split(',')))
                 else:
                     self.value = vtype( self.value )
             self.vtype = vtype
@@ -424,7 +424,7 @@ class SettingsManager(object):
 
             next = cfg_user.get( name, default )
 
-            if next.error > default.error:
+            if bool(next.error) > bool(default.error):
 
                 if self.verbose: self.log.warning(\
                     'User setting %s is reset to default (%r),\n\treason: %s'\
