@@ -420,7 +420,7 @@ class MDSettingsConfigFileParser(object):
                             alignMask=alignMask, **extracfg)
 
 
-import Biskit.test as BT
+import biskit.test as BT
 from . import tools as T
 class Test(BT.BiskitTest):
     """Test"""
@@ -448,7 +448,7 @@ if __name__ == "__main__":
     BT.localTest()
 
 #
-#import Biskit.test as BT
+#import biskit.test as BT
 #import tools as T
 #class Test1(BT.BiskitTest):
 #    """Test"""

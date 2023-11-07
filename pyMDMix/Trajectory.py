@@ -31,7 +31,7 @@ __date__ ="$16-ene-2014 17:09:33$"
 
 import os.path as osp
 from . import settings as S
-import Biskit as bi
+import biskit as bi
 
 
 class TrajFileError(Exception):
@@ -131,7 +131,7 @@ class Trajectory(object):
             raise StopIteration()
 
 
-import Biskit.test as BT
+import biskit.test as BT
 from . import tools as T
 
 class Test(BT.BiskitTest):

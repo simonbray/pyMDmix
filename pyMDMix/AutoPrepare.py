@@ -46,10 +46,10 @@ import os.path as osp
 
 import numpy as npy
 
-import Biskit as bi
-import Biskit.mathUtils as MU
-from Biskit.PDBParser import PDBParserError
-from Biskit.PDBParseFile import PDBParseFile
+import biskit as bi
+import biskit.mathUtils as MU
+from biskit.PDBParser import PDBParserError
+from biskit.PDBParseFile import PDBParseFile
 
 from . import tools as T
 from . import settings as S

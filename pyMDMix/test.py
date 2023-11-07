@@ -23,13 +23,13 @@
 ##    TOBEPUBLISHED
 ##
 """
-Module adapted from Biskit.test
+Module adapted from biskit.test
 ===============================
 Inherited functions are modified to make testing work on pyMDMix tree structure.
 All rights to Raik.
 """
 
-from Biskit.test import *
+from biskit.test import *
 import pyMDMix.tools as T
 import os.path as osp
 
@@ -60,7 +60,7 @@ class PyMDMixTestLoader( BiskitTestLoader ):
 
 
 ############################################
-### Script functions adapted from Biskit ###
+### Script functions adapted from biskit ###
 ############################################
 
 def _use( defaults ):
@@ -125,7 +125,7 @@ def _convertOptions( o ):
 
 
 if __name__ == '__main__':
-    from Biskit import EHandler
+    from biskit import EHandler
     import sys
 
 

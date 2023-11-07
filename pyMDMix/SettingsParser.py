@@ -547,7 +547,7 @@ class SettingsManager(object):
         else: ns.update(d)
 
 
-import Biskit.test as BT
+import biskit.test as BT
 
 class Test(BT.BiskitTest):
     """Test"""

@@ -598,7 +598,7 @@ class GridData(object):
         @param3 value:  Optionally one can provide the value to assign to those points (default = 999)
         @param3 type:   int
         """
-        import Biskit
+        import biskit as biskit
         if isinstance(PDB, Biskit.PDBModel):
             protein = PDB
         else:
@@ -626,7 +626,7 @@ class GridData(object):
 
         return data
         """
-        import Biskit
+        import biskit as biskit
         if isinstance(PDB, Biskit.PDBModel):
             protein = PDB
         else:
@@ -842,7 +842,7 @@ class GridFromPDB(GridData):
 	takeProtein	Boolean. If true, will try to compress only protein from PDB.
 			If False, will take the whole PDB itself
 	"""
-        import Biskit
+        import biskit as biskit
         if isinstance(PDB, Biskit.PDBModel):
             prot = PDB
         elif os.path.exists(PDB):
@@ -1289,7 +1289,7 @@ def getRadialIndices(radius, spacing, minradius=False):
 
 ###TESTING
 
-import Biskit.test as BT
+import biskit.test as BT
 from . import tools as T
 
 class Test(BT.BiskitTest):
