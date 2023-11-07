@@ -32,6 +32,7 @@ __date__ ="$06-feb-2014 15:36:29$"
 """
 This module contains several classes for information storage and cross linking information.
 """
+from functools import reduce
 
 class Atom(object):
     "Simple container for atomic information gathered in the OFF file: name, type, element, charge"
@@ -138,4 +139,4 @@ class Probe(object):
 
 
 if __name__ == "__main__":
-    print "Hello World"
+    print("Hello World")
