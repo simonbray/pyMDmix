@@ -65,7 +65,6 @@ Summary for all
 import os
 import sys
 import logging
-import user
 import os.path as osp
 from . import tools as T
 from . import SettingsParser as P
@@ -217,7 +216,7 @@ def setLogger(level=None, logFile=None):
 ######################
 ## clean up name space
 
-del T, user
+del T
 del __CFG_DEFAULT, __CFG_USER, m
 del __defff, __ffok, root, dirs, files
 del rootlog, os, osp, logging, testparam, Browser
