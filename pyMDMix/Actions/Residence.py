@@ -120,7 +120,7 @@ class Residence(object):
                         outfilename='', *args, **kwargs):
         """
         Parse a trajectory and check if a region is occupied or not and by what residue ID and name.
-        
+
         The region must be defined using a sphere: with a tolerance around the center coordinate in Angstrom.
 
         Args:
@@ -150,7 +150,7 @@ class Residence(object):
         self.tolerance = tolerance
         self.trackResNames = trackResNames
         self.outfilename = outfilename
-	self.hotspot_coords = []
+        self.hotspot_coords = []
         self.workerList = []
         self.results = {}
         self.mapIndexToResID = {}
@@ -183,7 +183,7 @@ class Residence(object):
         self.log.info("Residence: Resnames to track: %s"%self.trackResNames)
         self.log.info("Tolerance: %.2f"%self.tolerance)
 
-        
+
         # Set maps to residuenames and ids
         self.maskNoH = ~self.pdb.maskH()
         self.mapIndexToResID = dict(enumerate(npy.array(self.pdb['residue_number'], dtype=int)[self.maskNoH]))
@@ -191,11 +191,11 @@ class Residence(object):
                                         npy.array(self.pdb['residue_name'])[self.maskNoH])))
         # Add a dummy residue with id 0 to identify non-occupied frames
         self.mapResIDToResName[0] = 'NO_RESIDENCE'
-        
+
         # If trackResName not given, issue a warning! All residues will be included in the tracking! Even protein ones.
         if not self.trackResNames:
             self.log.warn("Residence: No trackResNames attribute given. Will track any residue falling into the hotspot (even protein ones!).")
-        
+
     def run(self,frameandnum):
         "For each snapshot just save the coordinates of the atoms of interest in a file"
         frame, framenum = frameandnum
@@ -248,7 +248,7 @@ class Residence(object):
             name = resnames[i]
             if name not in finalmap: finalmap[name] = []
             finalmap[name].append(idx)
-        
+
         # Write map to first lines in file preceded with a #
         out.write("# Residence results study for replica %s"%self.replica.name)
         if self.trackResNames: out.write(". Tracked residues: %s\n"%self.trackResNames)
@@ -256,14 +256,14 @@ class Residence(object):
         out.write("# RESNAME-RESID MAP\n")
         for k, v in list(finalmap.items()): out.write("# %s = %s\n"%(k, ','.join(map(str,v))))
         out.write("# DATA\n")
-        
+
         # Finally write frames and ids
         for frameid in sorted(self.results.keys()):
             out.write("%d\t%s\n"%(frameid, '\t'.join(map(str, self.results[frameid]))))
-        
+
         out.close()        
         self.log.info("Results writen to %s"%os.path.abspath(self.outfilename))
-        
+
         # Add name to resid map to results
         self.results['map'] = finalmap
         return dict(self.results)

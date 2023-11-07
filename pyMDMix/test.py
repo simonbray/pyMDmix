@@ -41,8 +41,8 @@ class PyMDMixTestLoader( BiskitTestLoader ):
     Wrap for BiskitTestLoader to match pyMDMix structure
     """
     def modulesFromPath( self, path=osp.split(T.projectRoot())[0], module='pyMDMix' ):
-	import glob
-	module_folder = module.replace('.', os.path.sep)
+        import glob
+        module_folder = module.replace('.', os.path.sep)
         files = glob.glob( os.path.join( path, module_folder,'*.py' ) )
         files = list(map( T.stripFilename, files ))
         files = [ f for f in files if f[0] != '_' ]
@@ -55,7 +55,7 @@ class PyMDMixTestLoader( BiskitTestLoader ):
                 pass  ## temporary // remove after testing
         return r
     def collectTests( self, path=osp.split(T.projectRoot())[0], module='pyMDMix' ):
-	modules = self.modulesFromPath( path=path, module=module )
+        modules = self.modulesFromPath( path=path, module=module )
         self.addTestsFromModules( modules )
 
 
@@ -140,12 +140,12 @@ if __name__ == '__main__':
 
     if len( sys.argv ) == 1 and 'test.py' in sys.argv[0]:
         _use( defaults )
-        
+
     _convertOptions( o )
 
     BiskitTest.VERBOSITY = o['v']
     BiskitTest.DEBUG = o['debug']
-    
+
     l = PyMDMixTestLoader( allowed=o['i'], forbidden=o['e'],
                           verbosity=o['v'], log=o['log'], debug=o['debug'])
 

@@ -106,7 +106,7 @@ class Trajectory(object):
         """
         Trajectory parser for files in filelist. Files should have expected extension names:
         dcd for NAMD and nc, netcdf, x, x.gz for AMBER.
-        
+
         :arg int step: Return frame every *step* frames.
         :arg list frameselection: List of integers selecting specific frames from each file.
         """

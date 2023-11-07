@@ -61,7 +61,7 @@ class SystemConfigFileParser(object):
         ########################################################################
         ######## READ PROJECT SECTION AND CREATE PROJECT INSTANCE #########
         ########################################################################
-        
+
         try:
             fileSection = dict(self.__configHandle.items('SYSTEM'))
         except:
@@ -84,9 +84,9 @@ class SystemConfigFileParser(object):
         if off:
             # If OFF given, this has priority
             if pdb: self.log.warn("Ignoring PDB entry in config file. OFF entry has priority and will be used.")
-            
+
             # CONSIDER SPECIAL SYSTEM CASE FOR TESTING
-            
+
             if off == 'test': parms.update({'amberOFF':off})
             else:
                 if not osp.exists(off): 

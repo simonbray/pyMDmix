@@ -45,25 +45,25 @@ class PlotError(Exception):
 class Plot(object):
     def __init__(self):
         self.log = logging.getLogger("Plot")
-    
+
     def plotMDAmber(self, replicalist, properties=[], outfilename=None, selectedsteps=[], hideylabels=True, show=True, **kwargs):
         """
         Plot production properties like energy, volume, temperature, restrains... etc. Name in properties should match those of AMBER
         output file names (eg. VOLUME, ETOT, ...)
         """
         import re
-        
+
         if not properties: properties=ALL_AMBER_PROPS
         if not isinstance(replicalist, list): replicalist = [replicalist]
         if not isinstance(properties, list): properties = [properties]
-        
+
         self.log.info("Plotting replicas %s. Properties: %s"%(','.join([x.name for x in replicalist]), ','.join(properties)))
-        
+
         # Construct regexps
         regexps = {}
         for prop in properties:
             regexps[prop] = re.compile('%s\s+=\s+(-{0,1}\d+\.{0,1}\d+)'%re.escape(prop))
-        
+
         # Fetch data
         rdata = {}
         for repl in replicalist:
@@ -72,29 +72,29 @@ class Plot(object):
             steps = selectedsteps or list(range(1, repl.ntrajfiles+1))
             for f in steps:
                 outfile = check.getProductionOutputFile(f)
-                
+
                 if not outfile:
                     raise PlotError("Output file for step %i could not be found. Make sure all selected steps are finished: %s"%(f,steps))
-                
+
                 # fetch properties from file
                 tmpdata = dict([(p,[]) for p in properties])
                 for line in outfile.split('\n'):
                     for prop, exp in list(regexps.items()):
                         m = exp.search(line)
                         if m: tmpdata[prop].append(float(m.groups()[0]))
-                
+
                 # Remove two last digits from values (Meand and fluctuation values)
                 # and extend global results
                 for k, v in list(tmpdata.items()):
                     rdata[repl.name][k].extend(v[:-2])
-                
+
         # Organize data by property instead of by replica
         plotdata = {}
         for r, data in list(rdata.items()):
             for prop, vals in list(data.items()):
                 if prop not in plotdata: plotdata[prop] = {}
                 plotdata[prop][r] = vals
-                
+
         # Calc shape of the plot
         nplots = len(properties)
         fig, axes = plt.subplots(nplots, 1, sharex=True)
@@ -105,26 +105,26 @@ class Plot(object):
             ax.set_ylabel(prop)
             if hideylabels: ax.set_yticklabels([])
             [ax.plot(d, label=r) for r,d in list(data.items())]
-        
+
         del rdata
-        
+
         plt.legend(prop={'size':6})
         if outfilename: fig.savefig(outfilename)
         if show: plt.show()
-                
-    
+
+
     def plotRMSDReplicas(self, replicaList, outfilename=None, show=True, selectedsteps=[], *args, **kwargs):
         """Plot rmsd evolution for the replica and save the plot to outfilename.  Plot using pyplot. 
         X axis is time and Y axis RMSD. args and kwargs can be used to tune the plot attributes.
         TRAJECTORY MUST BE ALIGNED BEFORE PLOTTING.
-        
+
         Args:
                 replicaList     (list of ReplicaInfo)   Replicas to plot
                 outfilename     (str)           Filename to store the plot. Use appropriate extension (pdf, png, jpg, etc) as pyplot will try 
                                                 to recognize the output format from filename.
                 show            (bool)          Plot directly to screen.
                 stepselection   (list)          Number of steps to plot.
-                        
+
         Returns:
                 Function writes figure to file directly and it returns the Figure instance
                 so the user can further modify it.
@@ -132,15 +132,15 @@ class Plot(object):
         plotdata = self.fetchRMSDdata(replicaList, selectedsteps)
         fig = self.plotRMSDdata(plotdata, outfilename=outfilename, show=show, *args, **kwargs)
         return fig
-    
+
     def fetchRMSDdata(self, replicaList, selectedsteps=[]):
         """
         Collect RMSD data for the replicas in *replicaList*. Replicas must be aligned.
         All files ending with *rmsd.out in alignment folder will be collected, joined and stored in a dictionary
         that can be plotted with plotRMSDdata.
-        
+
         :arg list replicaList: List of Replica instances to plot
-        
+
         :return: Dictionary with replica name and pairs x,y values for BB and HA data.
         """
         if not isinstance(replicaList, list): replicaList = [replicaList]
@@ -154,7 +154,7 @@ class Plot(object):
             if replica.isAligned(selectedsteps):
                 plotdata[replica.name] = {}
                 folder = osp.join(replica.path,replica.alignfolder)
-                
+
                 # Work on BB RMSDs
                 fnames = "*_bb_rmsd.out"
                 filelist = glob.glob(folder+os.sep+fnames)
@@ -196,22 +196,22 @@ class Plot(object):
                 self.log.warn("Replica %s does not have trajectory aligned. Skipping plotting."%replica.name)
 
         return plotdata
-    
+
     def plotRMSDdata(self, replicarmsd, outfilename=None, show=False, *args, **kwargs):
         """
         Plot data obtained with fetchRMSDdata.
-        
+
         :arg dict replicarmsd: Dictionary containing for each replica name a pair BB and HA entries with the RMSD data. Format: {'replica':{'BB':[x, y], 'HA':[x,y]},}
         :arg str outfilename: If given, save figure with this file name. Make sure you use a matplotlib compatible suffix (e.g. png pdf jpg)
         :arg bool show: Show figure interactively?
-        
+
         :return: Matplotlib figure
         """
         mp.rcParams['lines.linewidth'] = 0.0
         mp.rcParams['axes.linewidth'] = 0.5
         colorspace = cm.rainbow(npy.linspace(0,1,len(list(replicarmsd.keys()))))
         fig, axes = plt.subplots(2,1,sharex=True)
-        
+
         # Plot replicas BB and HA
         i = 0
         for replica, rmsdata in list(replicarmsd.items()):
@@ -220,26 +220,26 @@ class Plot(object):
             x,y = rmsdata['HA']
             axes[1].plot(x, y, color=colorspace[i], label=replica, linestyle='-', linewidth='1.5', *args, **kwargs)
             i += 1
-        
+
         # Decorate
         axes[0].set_title("BB RMSD plot")
         axes[0].set_ylabel('RMSD ($\AA^2$)')
         axes[1].set_title("HA RMSD plot")
         axes[1].set_xlabel('Time (ns)')
         axes[1].set_ylabel('RMSD ($\AA^2$)')
-                
+
         plt.legend(prop={'size':'small'}, loc="upper center", ncol=min(len(list(replicarmsd.keys())), 3))
         if outfilename: 
             self.log.info("Saving RMSD plot to file %s"%outfilename)
             fig.savefig(outfilename, *args, **kwargs)
         if show: plt.show()
         return fig
-    
+
     def plotResidenceResults(self, results, outfilename=None, show=False, colormap={}, *args, **kwargs):
         """
         Plot occupancy action results and save the plot to outfilename.  Plot using pyplot. 
         One color per residuename. X axis is time and Y axis residue ID. args and kwargs can be used to set up the plot attributes.
-        
+
         :arg dict|str results:  If dict is given, its assumed that it's the resulting dict from Occupancy Action. If its a string. It's assumed it is a textfile with the result printed from Occupancy Action.
         :arg str outfilename:   Filename to store the plot. Use appropriate extension (pdf, png, jpg, etc) as matplotlib will try to recognize the output format from filename.
         :arg bool show:         Show plot in screen? pyplot.show command.
@@ -248,28 +248,28 @@ class Plot(object):
         """
         self.log.info("Plotting occupancy results...")
         from collections import Counter
-        
+
         mp.rcParams['lines.linewidth'] = 0.0
         mp.rcParams['axes.linewidth'] = 0.5
-                
+
         # If results is string, process filename to obtain same results dict format as Occupancy Action output.
         if isinstance(results, str):
             results = self.getDictFromOccupancyFile(results)
         elif not isinstance(results, dict):
             raise AttributeError("results should be a string with a valid filename containing occupancy results or a dictionary with the results from occupancy action.")
-        
+
         # One color per residue name
         names = list(results['map'].keys())
         if 'NO_OCCUPANCY' in names: names.remove('NO_OCCUPANCY')
         if not colormap:
             colorspace = cm.rainbow(npy.linspace(0,1,len(names)))
             colormap = dict(list(zip(names, colorspace)))
-        
+
         # Build a reverse map ID to Name
         idToName = {}
         for n, ids in list(results['map'].items()):
             for i in ids: idToName[i] = n
-        
+
         # Finally re-order data by name to create different series
         # Each name will contain a list (resid, frame)
         data = {}
@@ -285,11 +285,11 @@ class Plot(object):
                 name = idToName.get(idval)
                 if name not in data: data[name] = []
                 data[name].append((idval,frame))
-        
+
 #        labels = map(idToName.get, data.keys())
 #        colors = map(colormap.get, labels)
 #        coloridmap = dict(zip(data.keys(),colors))
-                
+
         # Start a figure
         fig = plt.figure(*args, **kwargs)
         plot = fig.add_subplot(111)
@@ -298,14 +298,14 @@ class Plot(object):
         plot.set_xlim(0, maxframe+1)
         plot.set_xlabel('Frame number')
         plot.set_ylabel('Residue ID')
-        
+
         # Work on each series (residues)
         for name, resFrame in list(data.items()):
             if name == 'NO_RESIDENCE': continue
             y,x = npy.array(resFrame).T
             plot.scatter(x, y, s=50, lw=0.0, alpha=0.5, facecolor=colormap[name], 
                                         label=name, *args, **kwargs)
-                                        
+
             # Add text for 2 most famous residues (those occupying a lot the site)
             c = Counter(y.tolist()).most_common(2)
             [plot.text(-200, famous[0], str(famous[0]), verticalalignment='center', horizontalalignment='left',
@@ -324,7 +324,7 @@ class Plot(object):
             fig.savefig(outfilename, *args, **kwargs)
             self.log.info("Saved residence plot: %s"%os.path.abspath(outfilename))
         if show: plt.show()
-                
+
         return fig
 
 
@@ -339,7 +339,7 @@ class Test(BT.BiskitTest):
         plotter = Plot()
         fig = plotter.plotRMSDdata(dummydata)
         self.assertTrue(fig)
-        
+
 
 if __name__ == "__main__":
     print("Hello World")

@@ -90,10 +90,10 @@ class OpenMMWriter(object):
         """
         Get the index of atoms to be restrained.
         If replica.restrMask is 'AUTO', calculate mask from solute residue ids.
-        
+
         :args replica: Replica to obtain mask for. If False, use replica loaded at instantiation.
         :type replica: :class:`~Replicas.Replica`
-        
+
         :returns: index of atoms to be restrained or **False** if replica has FREE restrain mode.
         """
         replica = replica or self.replica
@@ -110,21 +110,21 @@ class OpenMMWriter(object):
 
             if not pdb:
                 raise OpenMMWriteError("Error creating SolvatedPDB from System in replica %s"%replica.name)
-          
+
                 out = npy.where(pdb.soluteMask)[0]
             else:
                 #TOCHECK
                 out = replica.restrMask
 
         if replica.restrMode == 'BB':
-             # Back bone only
-             mask_solute_BB = pdb.maskBB() * pdb.soluteMask
-             out = npy.where(mask_solute_BB)[0]
+            # Back bone only
+            mask_solute_BB = pdb.maskBB() * pdb.soluteMask
+            out = npy.where(mask_solute_BB)[0]
 
         elif replica.restrMode == 'HA':
-             # If you want non-hydrogen ids in the protein side
-             mask_solute_noH = pdb.maskHeavy() * pdb.soluteMask
-             out = npy.where(mask_solute_noH)[0]
+            # If you want non-hydrogen ids in the protein side
+            mask_solute_noH = pdb.maskHeavy() * pdb.soluteMask
+            out = npy.where(mask_solute_noH)[0]
 
         else:
             return
@@ -253,16 +253,16 @@ class OpenMMWriter(object):
         """
         replica = replica or self.replica
         if not replica: raise OpenMMWriterError("Replica not assigned.")
-        
+
         T.BROWSER.gotoReplica(replica)
-        
+
         restr = ''
         if replica.hasRestraints:
             if not replica.minimizationAsRef: restr = self.restr
             else: 
                 self.log.warn('Use of Minimized structure as restraint reference is still not possible with OpenMM. Will use starting PRMCRD.')
                 restr = self.restr
-        
+
         formatdict = {'top':replica.top, 'crd':replica.crd, 'restraints':restr, 
                         'box':self.getBoxFromCRD(replica.crd).max(), 'timestep':int(replica.md_timestep),
                         'freq':replica.trajfrequency}
@@ -271,7 +271,7 @@ class OpenMMWriter(object):
         open(out,'w').write(self.minT.substitute(formatdict))
         exists = osp.exists(out)
         T.BROWSER.goback()
-        
+
         return exists
 
     def writeEqInput(self, replica=False):
@@ -281,10 +281,10 @@ class OpenMMWriter(object):
         """
         replica = replica or self.replica
         if not replica: raise OpenMMWriterError("Replica not assigned.")
-        
+
         restr = ''
         if replica.hasRestraints: restr = self.restr
-            
+
         T.BROWSER.gotoReplica(replica)
         formatdict = {'top':replica.top, 'crd':replica.crd, 'restraints':restr, 
                         'timestep':replica.md_timestep, 'freq':replica.trajfrequency}
@@ -313,7 +313,7 @@ class OpenMMWriter(object):
         eq2out = replica.eqfolder+os.sep+'eq2.py'
         open(eq2out,'w').write(self.mdNPT.substitute(formatdict))
         exists = osp.exists(eq1out) and osp.exists(eq2out)
-        
+
         T.BROWSER.goback()
         return exists
 
@@ -348,11 +348,11 @@ class OpenMMWriter(object):
         # otherwise, the minimization will have no restraints and will use this output for 
         # future restrains
         if replica.hasRestraints:
-           m = self.getRestraintsIndex()
-           mfield = self.restrT.substitute({'force':replica.restrForce,'mask':m})
-           substDict['maskfield'] = mfield
+            m = self.getRestraintsIndex()
+            mfield = self.restrT.substitute({'force':replica.restrForce,'mask':m})
+            substDict['maskfield'] = mfield
         else:
-           substDict['maskfield'] = ''
+            substDict['maskfield'] = ''
         outf = replica.minfolder+os.sep+'min.py'
         self.log.debug("Writing: %s"%outf)
         open(outf,'w').write(self.minT.substitute(substDict))
@@ -548,25 +548,25 @@ class OpenMMCheck(object):
         else:
             if self.warn: self.log.warn("Checking replica MD failed. Some steps could not pass the check: %s"%stepsdone)
             return False
-        
+
     def getSimVolume(self, replica=False, step=False, boxextension=False):
         """
         Fetch simulation volume information from restart files. 
-        
+
         :arg Replica replica: Replica to study. If false, will take replica loaded in initalization.
         :arg int step: Step to fetch volume for. If False, will identify last completed production step and use that one.
         :arg str boxextension: Extension for the output file containing the restart information. DEFAULT: rst.
-        
+
         :return float Volume: Simulation volume.
         """
         replica = replica or self.replica
         if not replica: raise AmberCheckError("Replica not assigned.")
-        
+
         boxextension = boxextension or 'rst'
-        
+
         # Work on step. If not given, fetch last completed production step.
         step = step or replica.lastCompletedProductionStep()
-        
+
         # Fetch rst file and read last line to get box side length and angle
         fname = replica.mdoutfiletemplate.format(step=step, extension=boxextension)
         fname = osp.join(replica.path, replica.mdfolder, fname)
@@ -575,11 +575,11 @@ class OpenMMCheck(object):
             return False
         box = list(map(float, open(fname,'r').readlines()[-1].strip().split()))
         vol = box[0]*box[1]*box[2]
-        
+
         if box[3] != 90.0: vol *= 0.77 # orthorombic volume correction
         return vol
 
-    
+
 import biskit.test as BT
 
 class Test(BT.BiskitTest):
@@ -589,25 +589,25 @@ class Test(BT.BiskitTest):
         """Create new replica and write MDinput"""
         from .MDSettings import MDSettings
         from .Systems import SolvatedSystem
-        
+
         top = osp.join(T.testRoot('pep', 'pep.prmtop'))
         crd = osp.join(T.testRoot('pep', 'pep.prmcrd'))
         sys = SolvatedSystem(name='pep',top=top, crd=crd)
         settings = MDSettings(solvent='WAT',mdProgram='OpenMM',restrMode='HA', restrForce=0.1)
-        
+
         self.testdir =  T.tempDir()
         self.r1 = sys+settings
         self.r1.setName('testOpenMM')
-        
+
         T.BROWSER.chdir(self.testdir)
-        
+
         # write replica folder and check methods of OpenMMWriter
         self.r1.createFolder()
         self.r1.createMDInput()
         writer = OpenMMWriter(self.r1)
-        
+
         self.testdir += os.sep+'testOpenMM'
-    
+
     def cleanUp(self):
         T.tryRemove( self.testdir, tree=1 )
 

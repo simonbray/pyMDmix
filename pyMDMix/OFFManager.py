@@ -65,7 +65,7 @@ class OFFManager(object):
                 'hierarchy','name','positions','residueconnect',
                 'residues','residuesPdbSequenceNumber', 'solventcap',
                 'velocities']
-                
+
     def __init__(self, offFile=None, offString=None, *args, **kwargs):
         """
         Read Amber OFF files. Two options are accepted for initialization:
@@ -74,10 +74,10 @@ class OFFManager(object):
 
         :arg str offFile: Path to Amber OFF file to read.
         :arg str offString: String with the content of an already read offFile.
-                
+
         """
         self.tmpfile = None
-        
+
         if offFile:
             if osp.exists(offFile): self.off = open(offFile, 'r').read()
             else: raise OFFManagerError("Object File %s not found"%offFile)
@@ -118,7 +118,7 @@ class OFFManager(object):
         positions = self.readOffSection(unit, 'positions')
         xyz = npy.array([l.split() for l in positions], dtype=npy.float32)
         return xyz
-    
+
     def getConnectivity(self, unit):
         """
         Fetch connectivity table for unit selected.
@@ -153,17 +153,17 @@ class OFFManager(object):
         atomlist = []
         atominfo = self.readOffSection(unit,'atoms')
         for line in atominfo:
-                line = line.split()
-                element = int(line[6])
-                if skipH and element == 1: continue
+            line = line.split()
+            element = int(line[6])
+            if skipH and element == 1: continue
 
-                id = int(line[5])
-                name = line[0].split('"')[1]
-                type = line[1].split('"')[1]
-                charge = float(line[7])
+            id = int(line[5])
+            name = line[0].split('"')[1]
+            type = line[1].split('"')[1]
+            charge = float(line[7])
 
-                d = {'name':name, 'id':id, 'type':type, 'charge':charge, 'element':element}
-                atomlist.append(Atom(**d))
+            d = {'name':name, 'id':id, 'type':type, 'charge':charge, 'element':element}
+            atomlist.append(Atom(**d))
         return atomlist
 
     def getUnits(self):
@@ -173,9 +173,9 @@ class OFFManager(object):
         next(off)
         units = []
         while 1:
-          line = off.next().strip()
-          if "!" in line: break
-          units.append(line.split("\"")[1])
+            line = off.next().strip()
+            if "!" in line: break
+            units.append(line.split("\"")[1])
         del off
         return units
 
@@ -310,7 +310,7 @@ class OFFManager(object):
         """
         Write OFF content to temprorary disk file.
         Filepath is also stored in :attr:`tempfile`
-        
+
         :return: Absolute path to the file.
         """
         import tempfile
@@ -337,7 +337,7 @@ class Test(BT.BiskitTest):
         """OFFManager test"""
 
         f_in = T.testRoot('solvents','ETAWAT20.off')
-        
+
         self.m = OFFManager(offFile=f_in)
         self.assertEqual(self.m.getUnits(), ['ETA','ETAWAT20','WAT'])
         self.assertEqual(self.m.getResidueList('ETAWAT20',unique=True), ['WAT','ETA'])

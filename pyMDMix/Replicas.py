@@ -99,7 +99,7 @@ class Replica(object):
         :arg str fromfile:  Load existing Replica instance from pickled file. This instantiation way has priority.
         :arg str top: Amber Topology file path to be loaded.
         :arg str crd: Amber Coordinate file to be loaded. A solvated system will be created from top and crd.
-        
+
         """
         if fromfile:
             # Load existing replica file
@@ -140,7 +140,7 @@ class Replica(object):
             if not mdsettings:
                 from .MDSettings import MDSettings
                 mdsettings = MDSettings(**kwargs)
-                
+
             for k,v in list(mdsettings.__dict__.items()):
                 if k == 'name': continue
                 if k == 'FF': continue
@@ -231,7 +231,7 @@ Solvent: {solvent}
         Fix prmtop by removing SCEE and SCNB sections, they will take default values.
         File will be copied with same name and suffix ``_back`` to prevent file loss.
         Fixed topology will overwrite old filename.
-        
+
         :arg str prmtop: File path to amber parm7 topology file.
         """
         import shutil
@@ -240,13 +240,13 @@ Solvent: {solvent}
         out = open(prmtop,'w')
         line=top.readline()
         while line:
-                if not '%FLAG SCEE_SCALE_FACTOR' in line:
-                        out.write(line)
-                else:
-                        while not '%FLAG SOLTY ' in line:
-                                line = top.readline()
-                        out.write(line)
-                line = top.readline()
+            if not '%FLAG SCEE_SCALE_FACTOR' in line:
+                out.write(line)
+            else:
+                while not '%FLAG SOLTY ' in line:
+                    line = top.readline()
+                out.write(line)
+            line = top.readline()
         out.close()
         top.close()
         return True
@@ -275,7 +275,7 @@ Solvent: {solvent}
         Explore replica folder looking for known grid formats and fecthing type/probes.
         Additional filters are allowed: if *prefix* or *suffix* are given, only grids
         matching this starting or ending of filename will be returned (file extension is not included in suffix).
-        
+
         :arg str prefix: String with filename prefix.
         :arg str suffix: String with filename suffix.
         """
@@ -293,7 +293,7 @@ Solvent: {solvent}
                     grids.append(GM.Grid(osp.join(root, f)))
         self.grids = grids
         return grids
-        
+
     def getChecker(self, **kwargs):
         "Get MD checker according to the simulation program used"
         # Set checker according to mdProgram
@@ -331,12 +331,12 @@ Solvent: {solvent}
         :return: :class:`Trajectory.Trajectory` object
         """
         from .Trajectory import Trajectory
-        
+
         if not stepselection: stepselection = list(range(1, self.ntrajfiles+1))
         else: self.log.info("Trajectory selected steps: %s"%stepselection)
         if usealigned:
             if not self.isAligned(stepselection): usealigned = False
-        
+
         if usealigned:
             path = self.alignpath
             checkext = self.checkAlignExtension
@@ -347,7 +347,7 @@ Solvent: {solvent}
             path = self.mdpath
             checkext = self.checkProductionExtension
             self.log.debug("Using not aligned trajectory")
-        
+
         # Build File list to parse
         flist = []
         stepselection.sort()
@@ -372,7 +372,7 @@ Solvent: {solvent}
 #        p.setSolvent(self.solvent)
         p.fixNumbering()
         return p
-    
+
     def getGridsByType(self, grid_type=None, **kwargs):
         """Return grids found in current replica.
         If *type* is given, will only return grids matching the type selected.
@@ -408,7 +408,7 @@ Solvent: {solvent}
                 if g.probe not in d: d[g.probe] = []
                 d[g.probe].append(g)
         return d
-        
+
     def checkProductionExtension(self, steps=[]):
         """
         Check file extension for production trajectories in 'mdfolder'.
@@ -459,7 +459,7 @@ Solvent: {solvent}
         if not osp.exists(self.alignfolder):
             result = dict([(i, None) for i in steps])
             return result
-        
+
         files = os.listdir(self.alignfolder)
         for i in steps:
             n = self.mdoutfiletemplate.format(step=i, extension='')
@@ -475,7 +475,7 @@ Solvent: {solvent}
                 match = match[0]
             else: match = None
             result[i] = match
-            
+
         T.BROWSER.goback()
         return result
 
@@ -485,7 +485,7 @@ Solvent: {solvent}
         """
         if not stepselection: stepselection=list(range(1,self.ntrajfiles+1))
         if not isinstance(stepselection, list): stepselection = [stepselection]
-        
+
         exts = self.checkAlignExtension(stepselection) # Check all file extensions in align folder
         if sum([el != None for el in list(exts.values())]) != len(stepselection):
             return False
@@ -494,10 +494,10 @@ Solvent: {solvent}
     def isProductionFinished(self, stepselection=[], warn=True):
         """
         Return True if MD production stage has been completed
-        
+
         :arg list stepselection: Selection of steps to be checked. Default is all.
         :arg bool warn: Print a warning message when some file is missing or uncomplete.
-        
+
         :returns: Bool indicating if steps are correctly finished.
         """
         if not stepselection: stepselection=list(range(1,self.ntrajfiles+1))
@@ -510,9 +510,9 @@ Solvent: {solvent}
         Check each productio step and return the number of the last incompleted step.
         Useful to track progress or in energy conversion to take volume from last completed step when analyzing
         incompleted runs. Will return zero if no production step is complete.
-        
+
         :arg int startstep: Check production steps starting with this number to reduce function timing when we already know info.
-        
+
         :returns: int
         """
         last = 0
@@ -529,14 +529,14 @@ Solvent: {solvent}
         """
         check = self.getChecker(warn=False)
         return check.checkEquilibration()
-    
+
     def isMinimizationFinished(self):
         """
         Return True if MD minimization stage has been completed
         """
         check = self.getChecker(warn=False)
         return check.checkMinimization()
-        
+
     def setNanos(self, nanos):
         "Change number of nanoseconds for current replica"
         self.nanos = int(nanos)
@@ -625,7 +625,7 @@ Solvent: {solvent}
         queue.write(self, **kwargs)
         self.goback()
         return True
-    
+
     def folderscreated(self):
         "Return **True** if replica directory structure is created."
         return self.__folderscreated
@@ -661,7 +661,7 @@ Solvent: {solvent}
         """
         if not self.name:
             raise ReplicaError("Unnamed replica folder can not be created.")
-        
+
         if self.system and self.eqfolder and self.mdfolder:
             import distutils.dir_util as du
             import shutil
@@ -834,7 +834,7 @@ Solvent: {solvent}
 
         # Goback to previous folder
         T.BROWSER.goback()
-        
+
     def dettach(self, attachname):
         """
         Remove attachement with name **attachname**
@@ -912,7 +912,7 @@ def renameReplicaList(repls):
     Set Name accoding to solvent and number of replicas. E.g. if the list contains 3 replicas with ethanol and 2 with water,
     the names will be: ``['ETA_1','ETA_2','ETA_3','WAT_1','WAT_2']``. This function does not return anything. Names are changed in 
     the replicas objects.
-    
+
     :arg list repls: List of :class:`Replica` objects to be renamed
     """
     import collections
@@ -921,7 +921,7 @@ def renameReplicaList(repls):
         solvs[r.solvent] += 1
         n = '%s_%i'%(r.solvent, solvs[r.solvent])
         r.setName(n)
-        
+
 def loadReplica(replicafile=None):
     """
     Load existing replica. 

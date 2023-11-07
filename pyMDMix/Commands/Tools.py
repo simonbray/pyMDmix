@@ -73,38 +73,38 @@ class Tools(Command):
             else:
                 print(('\n'.join(['%.3f'%r for r in results])))
             print("DONE")
-        
+
         elif parserargs.util_command == 'diffgrids':
             grid1 = parserargs.grid1
             grid2 = parserargs.grid2
             out = parserargs.outfile
-            
+
             for grid in (grid1, grid2):
                 if not os.path.exists(grid): raise MDMixError("Grid file %s not found"%grid)
 
             from pyMDMix.GridsManager import gridDifference
             gridDifference(grid1, grid2, out)
-        
+
         elif parserargs.util_command == 'sumgrids':
             grid1 = parserargs.grid1
             grid2 = parserargs.grid2
             out = parserargs.outfile
-            
+
             for grid in (grid1, grid2):
                 if not os.path.exists(grid): raise MDMixError("Grid file %s not found"%grid)
 
             from pyMDMix.GridsManager import gridSum
             gridSum(grid1, grid2, out)
-        
+
         elif parserargs.util_command == 'trim':
             ingrid = parserargs.ingrid
             outname = parserargs.outname
             refpdb = parserargs.refpdb
             buffer = parserargs.buff
-            
+
             if not os.path.exists(refpdb): raise MDMixError("PDB file %s not found"%refpdb)
             if not os.path.exists(ingrid): raise MDMixError("Grid file %s not found"%ingrid)
-            
+
             from pyMDMix.GridsManager import trim, Grid, GridData
             smallgrid = GridData.createFromPDB(refpdb, spacing=0.5, buff=buffer, takeProtein=False)
             ingrid = Grid(ingrid)
@@ -112,7 +112,7 @@ class Tools(Command):
             # trimmed[1].writeDX(outname)
             trim(smallgrid, ingrid)[1].writeDX(outname)
             print("DONE trimming")
-        
+
         elif parserargs.util_command == 'projecttemplate':
             import shutil
             fname = parserargs.filename

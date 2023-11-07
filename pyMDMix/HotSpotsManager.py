@@ -47,7 +47,7 @@ class HotSpot(object):
         HotSpot (HS) object. It may contain multiple coordinates and energies for the same hotspot.From *coords*, the minimum energy coordinate will be selected as HS centroid.
         Moreover, the extension in x,y,z coordinates and the volume will be calcualted. From *energies*, 
         a mean or averaged energy will be considered the total energy of the hotspot (depending on *energymethod*).
-        
+
         :arg coords: 3D coordinates of the hotspot (may be 1 or more).
         :type coords: :class:`npy.array`
         :arg energies: 1D array of energies for each coordinate.
@@ -87,7 +87,7 @@ class HotSpot(object):
             self.energymethod = energymethod
         else:
             raise AttributeError("Wrong energy averaging method. Valid methods are: %s"%valmethods)
-        
+
         # Calculate volume element from spacing
         self.spacing = spacing
         if len(spacing) == 3:
@@ -100,10 +100,10 @@ class HotSpot(object):
 
     def setIndex(self, i):
         self.index = i
-    
+
     def setProbe(self, probe):
         self.probe = probe
-        
+
     def calcSphereSimilarity(self):
         """
         Considering the volume and the extension, return an value of sphere ressemblance
@@ -131,7 +131,7 @@ class HotSpot(object):
         :arg bool onlycenter:          If True, write only centroid and total energy.all coordinates and energies in hotspot.
                                     If False, write all coordinates and energies in hotspot.
         :arg str atom:       Atom for defining hotspot coordinates.
-            
+
         :Returns: **True** if PDB file was correctly saved. **False** otherwise.
         """
         head, body = self.getHotSpotPDBstr(onlycenter=onlycenter, resname=resname, atom=atom)
@@ -151,20 +151,20 @@ class HotSpot(object):
         :args str atom: Atom name for defining hotspot coordinates.
         :args float occupancy: Value to assign in occupancy column. By default, sphereindex will be written.
         :args float bfactor: Value to assign in bfactor column. By default, energy will be written.
-        
+
         :Returns: Tuple (header, body) with hotspot info in header and atoms in body.
         """
         # Write a PDB for each point found
         head=[]
         pstr='ATOM  %5d %4s %3s %s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f'
         out = []
-        
+
         # define resname and atom
         if not resname: resname = self.probe.split('_')[0][:3]
         if not atom: 
             if '_' in self.probe: atom = self.probe.split('_')[1][:4]
             else: atom = '{:>3s}'.format(self.probe.strip())
-        
+
         if self.index: id = self.index
         else: id = 1
 
@@ -203,7 +203,7 @@ class HotSpot(object):
                 probabilities = probabilities/probabilities.sum()
                 self.coord = npy.average(self.coordList, axis=0, weights=probabilities)
                 #print probabilities
-            
+
             # Other properties
             self.npoints = len(self.coordList)
             self.volume = self.npoints*self.volelement
@@ -225,7 +225,7 @@ class HotSpot(object):
                 self.energy = -RT*npy.log(npy.exp(self.energyList/-RT).mean())
             else:
                 self.energy = None
-                
+
     def __cmp__(self, other):
         if self.energy < other.energy:  # compare name value (should be unique)
             return -1
@@ -244,7 +244,7 @@ class HotSpot(object):
 
     def __repr__(self):
         return "HotSpot ID:%d, E:%.2f C:%s Vol:%.2f Extension:%s SphereIndex: %.2f"%(self.index, self.energy,self.coord,self.volume, self.extension, self.sphereindex)
-    
+
 
 class HotSpotSet(object):
     "Base for a Set of HotSpots of the same chemical type"
@@ -265,7 +265,7 @@ class HotSpotSet(object):
         self.nclusters = 0
         self.info = info
         self.kwargs=kwargs
-        
+
 
     def __repr__(self):
         return "HotSpotSet Name: %s, Probe: %s. %i Hotspots."%(self.name, self.probe,len(self.hotspots))
@@ -298,17 +298,17 @@ class HotSpotSet(object):
     def getHSbyID(self, id):
         """
         Return hotspots with corresponding ids.
-        
+
         :arg list id:   Id(s) of hotspots to retrieve from the set.
         :returns: List of hotspots
         :rtype: list of :class:`HotSpot` instances
         """
         if not isinstance(id, list): id = [id]
         return [h for h in self.hotspots if h.index in id]
-    
+
     def getCondensedDMatrix(self):
         return self.dm
-    
+
     def getSquareDMatrix(self):
         return distance.squareform(self.dm)
 
@@ -361,10 +361,10 @@ class HotSpotSet(object):
 
     def pruneByVolume(self, minvolume):
         """Prunning by minimmum volume. Remove hotspots which do not have a minimum volume.
-        
+
         Args:
             minvolume   (float)     Minimum volume a hotspot should have to be considered.
-        
+
         Returns:
             HotSpotSet containing the new hotspots after prunning
         """
@@ -374,10 +374,10 @@ class HotSpotSet(object):
         newSet = HotSpotSet(self.probe, self.name)
         newSet.addHotSpots(selectedHS)
         return newSet
-    
+
     def pruneByEnergy(self, maxenergy):
         """Prunning by maximum mean energy. Remove hotspots which exceed this energy value.
-        
+
         :arg float maxenergy: Maximum energy a hotspot should have to be kept
         :returns: HotSpotSet containing the new hotspots after prunning
         """
@@ -390,11 +390,11 @@ class HotSpotSet(object):
 
     def pruneByShape(self, maximumSphereIndex):
         """Prunning by shape. All hotspots should have a SphereIndex <= maximumSphereIndex.
-        
+
         Args:
             maximumSphereIndex  (float)     SphereIndex value all hotspot should not trapass to be considered.
                                             Values range from 1 to any. Being 1 a perfect sphere.
-        
+
         Returns:
             HotSpotSet containing the new hotspots after prunning
         """
@@ -474,14 +474,14 @@ class HotSpotSet(object):
         This function is helpful for deciding if the clustering and hotspot creation was correctly done. If this value is too low,
         it means many hotspots do not have a sphere-like shape (not even close) meaning that probably they extend too much over the
         protein surface. It is possible to have disseminated hotspots but not common. 
-        
+
         So a big fraction means we have well localized hotposts with sphere-like shapes. A low fraction the contrary
         and the user should re-consider rebuilding the hotspotset with a lower cutvalue (for instance) or decrease 
         the cutdistance in the clustering algorithm to separate better.
-        
+
         Args:
             maxsphereindex      (float)     sphereindex to use for fraction calculation. 
-        
+
         Returns:
             fraction    (float)     Fraction of hotspots in the hotspotset which sphereindex is <= maxsphereindex.
         """
@@ -525,7 +525,7 @@ class HPCluster(HotSpot):
         if not isinstance(hotspotlist, list): self.hotspots = [self.hotspots]
         self.index = clusterID or 1
         self.setuphp()
-    
+
     def setuphp(self):
         "Calculate centroid and average energy and STD"
         self.coord = npy.array([h.coord for h in self.hotspots]).mean(axis=0)
@@ -557,21 +557,21 @@ class HotSpotMultipleSet(HotSpotSet):
         """
         :args list hsetlist: List of Hot spot sets (HSets) to add.
         :args list typelist: List of names to identify types corresponding to the hsetlist. Must have same order. If not given, will try to determine type from the HotSpotSet.probe attribute.
-        
+
         """
         HotSpotSet.__init__(self, name=name, info=info, *args, **kwargs)
         self.combinedhset = False
         self.clustdistance = clustdistance
         self.setProbeTypesMap(probetypesmap)
         if hsetlist: self.addHSets(hsetlist, probelist)
-    
+
     def setProbeTypesMap(self, probetypesdict):
         """
         Dictionary to identify names of probes with chemical types
         """
         assert isinstance(probetypesdict, dict)
         self.probestotypes = probetypesdict
-    
+
     def addHSets(self, hsetlist, probelist=False):
         "Add Hot Spot Sets (HSets) to the current Multiple Set"
         if hsetlist:
@@ -579,11 +579,11 @@ class HotSpotMultipleSet(HotSpotSet):
             for hi, hset in enumerate(hsetlist):
 #                if not isinstance(hset, HotSpotSet): 
 #                    raise HotSpotMultipleSetError, "Error adding %s. This should be a HotSpotSet object."%hset
-                
+
                 # Assign type from typelist if present or keep from HotSpotSet.probe attribute
                 if probelist: hset.probe = probelist[hi]
                 for i in range(hset.nhotspots): hset[i].probe = hset.probe
-                
+
                 # Add hotspots to current set
                 self.addHotSpots(hset.hotspots)
 
@@ -591,7 +591,7 @@ class HotSpotMultipleSet(HotSpotSet):
         """
         Write a PDB with the hotspots from a combined hotspot set obtained after combine method is called.
         Will write relative probability of the selected HS when combining HSets in occupancy column. Energy will be writen in bfactos column.
-        
+
         :arg str outpdb: File name to save
         :arg combinedHSet: Hot Spot set with combined hotspots from different probes/types.
         :type combinedHset: :class:`HotSpotSet`
@@ -602,7 +602,7 @@ class HotSpotMultipleSet(HotSpotSet):
         combinedHset = combinedHset or self.combinedhset
         if not combinedHset: raise HotSpotMultipleSetError("No combined HSet saved or given as argument")
         self.sortCombinedHSet(combinedHset)
-        
+
          # Write a PDB for each point found
         head=[]
         out = []
@@ -626,7 +626,7 @@ class HotSpotMultipleSet(HotSpotSet):
         if not combinedHSet: return
         combinedHSet.hotspots.sort()
         [h.setIndex(i+1) for i,h in enumerate(combinedHSet.hotspots)]
-        
+
     def combine(self, clustdistance=None):
         """
         Combine Hotspots from different HSets in self.hsets list. Cluster them and give a score
@@ -637,7 +637,7 @@ class HotSpotMultipleSet(HotSpotSet):
         self.clusterHotSpots(cutDistance=clustdistance)
         RT = 0.001986*300 # kcal/mol
         resultHSet = HotSpotSet(**self.kwargs)
-        
+
         # Work inside each cluster to select who will stay and give all information
         for i in range(1, self.nclusters+1):
             clustids = npy.where(self.clusterIndexes == i)[0]
@@ -647,7 +647,7 @@ class HotSpotMultipleSet(HotSpotSet):
 #            volumes = npy.array([c.volume for c in clusths])
 #            probes = npy.array([c.probe for c in clusths])
 #            nhs = npy.unique(probes).size
-            
+
             # Get the hotspot(s) with higher relative probability
             relp = probabilities / probabilities.sum()
             argsort = npy.argsort(relp)[::-1]
@@ -663,11 +663,11 @@ class HotSpotMultipleSet(HotSpotSet):
             hp.others = clusths[1:]
             hp.probability = keephp.probability
             resultHSet.addHotSpots(hp)
-        
+
         self.combinedhset = resultHSet
         self.sortCombinedHSet()
         return resultHSet
-        
+
 class CreateHotSpotSet(object):
     """
     Basic class for different hotspots construction algorithms.
@@ -684,7 +684,7 @@ class CreateHotSpotSet(object):
         """
         self.log = logging.getLogger("CreateHotSpotSet")
         self.kwargs= kwargs
-        
+
         if isinstance(grid, str) and os.path.exists(grid):
             self.grid = Grid(grid)
         elif isinstance(grid, Grid):
@@ -700,19 +700,19 @@ class CreateHotSpotSet(object):
     def setup(self, **kwargs):
         "Set parameters needed for running the algorithm"
         pass
-    
+
     def calculate(self):
         "Method to extract hotspot set from the grid"
         pass
 
     def getSet(self):
         return self.hotspotset
-    
+
 class CreateBySpheres(CreateHotSpotSet):
     """
     Visit minimum energy points in the grid and get a sphere hotspot with center in the min and a given radius. Only hotspot with an energy below
     certain cutoff will be considered. 
-    
+
     The algorithm iteratively searches the minimum energy point MIN in the grid. Then removes all surounding points at CANCELRADIUS angstroms around.
     It establishes a hotspot in MIN with radius VALSRADIUS angstroms. This hotspot is only finally considered if the total energy is below ENERGYCUT.
     """
@@ -721,7 +721,7 @@ class CreateBySpheres(CreateHotSpotSet):
         protValue are the values for points occupied by protein (initial zeros in counts).
         If the grid is already corrected by StandardState DG, this 1 will be modified. That's why we should modify this argument in those cases.
         If not average, return the minimum value as hotspot value
-        
+
         :args float cutvalue: Energy value to tell appart hotspots
         :args float valsradius: Distance in angstroms. Considrer surrounding values as hotspot.
         :args float cancelRadius: Radius in angstroms to tell apart different hotspots centers.
@@ -734,7 +734,7 @@ class CreateBySpheres(CreateHotSpotSet):
         self.cancelRadius = cancelRadius
         self.valsradius= valsradius
         self.rejectvalues = filter_gt
-        
+
 #        self.average = average
         self.log.info("CreateBySpheres SETUP. energycut:%.3f valsradius:%.2f cancelRadius: %.2f protValue:%.2f"%(cutvalue,
                         valsradius,cancelRadius,protValue))
@@ -748,7 +748,7 @@ class CreateBySpheres(CreateHotSpotSet):
         enestop = self.cutvalue +0.2 # Increase margin for loop stop. Do not miss hotspots with energy below energycut because the loop stops early
         henergy = -99999
         while henergy < enestop:
-            
+
             # fetch minimum energy point in searchgrid
             mins = searchgrid.getMinIndex()
             # If more than one match, just take one and leave the rest for other loops
@@ -756,7 +756,7 @@ class CreateBySpheres(CreateHotSpotSet):
             else: min = tuple(mins)
             # Finally set all values around min to 999 to not consider the place again
             searchgrid.cancelPoints(min, self.cancelRadius, 999)
-            
+
             # Fetch coordinates and energy values for the minimum and surrounding
             sphereindexes = self.grid.getRadialIndices(self.valsradius, min)
             coords = self.grid.origin+(sphereindexes*self.grid.delta)
@@ -767,7 +767,7 @@ class CreateBySpheres(CreateHotSpotSet):
             if not npy.any(mask): continue
             vals = vals[mask]
             coords=coords[mask,:]
-            
+
             # Filter_gt
             if not self.rejectvalues is False:
                 self.log.info("Filtering out points greater than %.2f"%self.rejectvalues)
@@ -775,7 +775,7 @@ class CreateBySpheres(CreateHotSpotSet):
                 if not npy.any(m): continue
                 vals = vals[m]
                 coords = coords[m,:]
-                
+
             # finally create a hotspot for these values and check if we keep it or not
             hp = HotSpot(coords, vals, probe=self.grid.probe, index=index, energymethod='volume',**self.kwargs)
             henergy = hp.energy
@@ -824,7 +824,7 @@ class createByCutoff(CreateHotSpotSet):
         if not self.cutvalue:
             self.cutvalue = self.grid.getPercentileCutValue(self.percentile, self.maskcutvalue)
         self.log.info("Using energy cut value: %.2f"%self.cutvalue)
-        
+
         # Identify indices for points < cutoffenergy
         maskpoints = data <= self.cutvalue
         indices = npy.vstack(npy.where(maskpoints)).T
@@ -881,7 +881,7 @@ class HotSpotsManager(object):
 
     def __getitem__(self, i):
         return self.hotspotSet.hotspots[i]
-    
+
     def createHotSpotSetFromGrid(self, grid, method, name='', info='', **kwargs):
         """
         From a Grid, extract hotspots.
@@ -893,7 +893,7 @@ class HotSpotsManager(object):
             grid    (Grid instance) Grid over which to calcualte hotspotset
             name    (str)       Name to identify the hotspotset to be created.
             info    (str)       Optional. Extra info to attach to the hotspotset
-            
+
 
         """%list(HS_CREATE_METHODS.keys())
         createhotspots = HS_CREATE_METHODS.get(method)(grid, info=info, name=name, **kwargs)
@@ -916,7 +916,7 @@ class HotSpotsManager(object):
             pickle.dump(self.hotspotSet, open(picklefileout, 'wb'))
         else:
             self.log.error("No hotspotSet stored in HotSpotsManager and no HSet given. Cannot save anything.")
-        
+
     def loadHotSpotSet(self, picklefilein):
         "Load previously saved hotspots from pickle file"
         import pickle
@@ -932,7 +932,7 @@ class HotSpotsManager(object):
         """
         Get pdb indices for the atoms neighbouring the hotspot around a given distance. Distance will be calculated from the hotspot centroid or considering all points insed depending on fromCentroid value.
         Also it is optional to include the hydrogens (default) or remove them from the returned list.
-        
+
         Args:
             hotspot     (HotSpot or HotSpotSet)     Fetch atoms around this hotspots
             pdb         (PDBModel or string)        What PDB to return atoms from. Should be a Biskit.PDBModel or a string pointing to a correct pdb file to read.
@@ -940,7 +940,7 @@ class HotSpotsManager(object):
             radius          (float)                 Radius around we consider an atom as neighbour
             includeH        (bool)                  Include hydrogens in returen indices?
             returnMask      (bool)                  Return as mask instead of list of indices?
-        
+
         Returns:
             indicesList     (list of ints)          Indices in the pdb corresponding to neighbouring atoms
             or
@@ -952,15 +952,15 @@ class HotSpotsManager(object):
             from scipy.spatial import KDTree as KDTree
         else:
             from scipy.spatial import KDTree
-        
+
         # Load PDB if string
         # and get Hydrogens mask
         if isinstance(pdb, str): pdb = bi.PDBModel(pdb)
         hids = npy.where(pdb.maskH())[0]
-        
+
         # First construct a KDTree with protein coordinates.
         tree = KDTree(pdb.xyz) # 3dims, 1 atom per bucket
-        
+
         # Find neighbours
         # check first if hotspot has multiple coords or just one
         if hotspot.coordList.ndim == 1:
@@ -982,7 +982,7 @@ class HotSpotsManager(object):
                 ids = [ri for ri in rawids if ri not in hids]   # check index is not a hydrogen atom
             else:
                 ids = rawids
-        
+
         if returnmask:
             m = [i in ids for i in range(len(pdb.xyz))]
             return  m
@@ -998,7 +998,7 @@ def createHotSpotsByCutoff(gridlist, percentile=0.02, cutoff=None, outprefix=Non
     :arg float cutoff: Use this hard cutoff value and ignore percentile.
     :arg str outprefix: If given, will save a PDB file and a pickle file containing the hot spot set found.
     :arg bool onlycenter: Write only hotspots centers in the output pdb.
-    
+
     :return: :class:`HotSpotMultipleSet` with results. If outprefix is given, will save two files with this prefix.
     """
     if not isinstance(gridlist, list): gridlist = [gridlist]
@@ -1030,7 +1030,7 @@ def createHotSpotsByMinSearch(gridlist, cutoff, meanradius=0.5, cancelRadius=2.0
     :arg float protValue: Ignore points with this value (e.g. Masked excluded volume).
     :arg float igonrevals_gt: When calculating mean value for the hotspot ignore values greater than this cutoff. 
     :arg str outprefix: If given, will save a PDB file and a pickle file containing the hot spot set found.
-    
+
     :return: :class:`HotSpotMultipleSet` with results. If outprefix is given, will save two files with this prefix.
     """
     if not isinstance(gridlist, list): gridlist = [gridlist]

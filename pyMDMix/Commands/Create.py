@@ -34,7 +34,7 @@ class Create(Command):
                 p = pyMDMix.Project(name=parserargs.projname)
                 p.createProjectFolder()
                 print("DONE")
-                
+
         elif parserargs.action == 'replica':
             name = parserargs.projname
             file = parserargs.file
@@ -48,7 +48,7 @@ class Create(Command):
             repl = solvatedsys+sets
             repl.setName(name=name)
             repl.createAll()
-                        
+
         elif parserargs.action == 'solvents':
             # CREATE NEW SOLVENT IN THE DATABASE
             #Checking mandatory file option is given and exists

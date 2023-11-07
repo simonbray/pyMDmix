@@ -41,7 +41,7 @@ class ExecutorThread(multiprocessing.Process):
         multiprocessing.Process.__init__(self)
         self.queue = queue
 #        self.sid = sid #sessionid
-        
+
     def run(self):
         while True:
             # Get next task or exit if None
@@ -67,15 +67,15 @@ class Executor(object):
         self.queue = multiprocessing.Queue()
         self.ncalls = multiprocessing.Manager().Value('i',0)
         self.log.debug("Init executor nthreads: %d"%nthreads)
-    
+
     def __del__(self):
         [self.queue.put(None) for _ in range(self.nthreads)]
-    
+
     def start(self):
         self.ncalls.value += 1
         self.log.debug("Registering new caller. ncalls: %d"%self.ncalls.value)
         if self.ncalls.value == 1: self.__setThreads() # init threads if first call
-                
+
     def terminate(self):
         self.ncalls.value -= 1
         if self.ncalls.value <= 0: # Terminate threads if last call
@@ -85,14 +85,14 @@ class Executor(object):
 #            [t.terminate() for t in self.threads]
 #            [t.join() for t in self.threads]
 #            self.__terminateThreads()
-        
+
     def __setThreads(self):
         "Start threads acording to self.maxproc"
         self.log.debug("Starting threads")
         [self.threads.append(ExecutorThread(self.queue)) for _ in range(self.nthreads)]
         [t.start() for t in self.threads]
 #        [t.join() for t in self.threads]
-            
+
     def changeNthreads(self, nthreads):
         "Change de number of processes to run in parallel"
         self.nthreads = nthreads or 1
@@ -101,7 +101,7 @@ class Executor(object):
     def submitCmd(self, fx=None, cmd=None, path=None, *args, **kwargs):
         """
         Submit command. Will wait for any slot in the processes to empty to launch current.
-        
+
         :arg str cmd: String with full execution command. 
         :arg str path: Path where to execute the program. Path will be passed to ``subprocess.Popen`` as *cwd* argument.
         """
@@ -111,13 +111,13 @@ class Executor(object):
             self.queue.put_nowait((cmd,path))
         elif fx:
             self.queue.put_nowait((fx, args, kwargs))
-        
+
     def waitJobCompletion(self):
         "Wait until all jobs in the queue are done"
         while not self.queue.empty(): 
 #            self.log.debug("Wating completion")
             time.sleep(self.twait)
-    
+
 
 if __name__ == "__main__":
     print("Hello World")

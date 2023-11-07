@@ -51,10 +51,10 @@ class SolvatedPDB(bi.PDBModel):
         self.resMasks = {}
         self.solvent=None
         if solvent: self.setSolvent(solvent)
-        
+
 #        self.fixNumbering()
 #        self.maskSoluteSolvent()
-        
+
     def __getstate__(self):
         d = self.__dict__.copy()
         del d['log']
@@ -116,7 +116,7 @@ class SolvatedPDB(bi.PDBModel):
             s = man.getSolvent(solvname)
             if s: self.solvent = s
             else: self.log.debug("Solvent name not found: %s"%solvname)
-            
+
 
     def setSoluteSolventMask(self):
         "When missing residues, only accept as part of the system those present in acceptList or in EXTRARESIDUES file.\
@@ -137,7 +137,7 @@ class SolvatedPDB(bi.PDBModel):
             self['residue_number'] = self.res2atomProfile('resnum')
         if len(self) > 99999 or force:
             self['serial_number'] = npy.arange(len(self)) + 1
-    
+
     def __prepareSolventResMasks(self):
         "Prepare mask for each solvent residue name"
         for res in self.solvent.residues:
@@ -150,14 +150,14 @@ class SolvatedPDB(bi.PDBModel):
         for probe in self.solvent.probes:
             self.probeMasks[probe.name] = self.maskFrom('residue_name', probe.residue.name) * self.maskFrom('name', probe.atoms)
         return True
-    
+
     def iterResidues(self, residuename):
         "Iterate over requested residues coordinates"
         if not self.resMasks: self.__prepareSolventResMasks()
         masks = self.resMasks.get(residuename)
         if not npy.any(masks): raise SolvatedPDBError("Invalid residue name %s. Residue not in solvent %s."%(residuename,self.solvent.name))
         for m in masks:
-                yield self.xyz[m]
+            yield self.xyz[m]
 
     def getProbeCoords(self, probename):
         "Obtain all coordinates for probe *probename*"
@@ -169,11 +169,11 @@ class SolvatedPDB(bi.PDBModel):
             # Not normal probe, may be a COM probe?
             if not probename in list(self.solvent.comprobes.keys()): raise SolvatedPDBError("Invalid probe name %s. Probe not in solvent %s."%(probename, self.solvent.name))
             else:
-                # Its a com probe, determine residue and 
-                # Fetch COM coordinates
+            # Its a com probe, determine residue and 
+            # Fetch COM coordinates
                 res = self.solvent.comprobes[probename].name
                 return npy.array([coord.mean(axis=0) for coord in self.iterResidues(res)])
-    
+
 #    def checkAll(self):
 ##        if self.checkMissingResidues():
 ##            self.log.warn("Identified some residues that will be missing during reference pdb generation or automask identification: %s. Ignore this message if the system is solvated with organic molecules."%self.missingResidueList)
@@ -234,7 +234,7 @@ class SolvatedPDB(bi.PDBModel):
                 first, last = list(map(int, groups[0].split('-')))
                 resIds += list(range(first, last+1))
             else:               # only one residue in the group
-                    resIds += [int(groups)]
+                resIds += [int(groups)]
         return resIds
 
     def getBBMaskSelectedRes(self, residueMask):
@@ -288,7 +288,7 @@ class SolvatedPDB(bi.PDBModel):
         some extra ones that will be missing if applying normal maskProtein.
         Will compare a normal Protein mask with the total number
         of residues in the pdbfile that should be prepared for runing in the void."""
-            
+
         pdb = self.removeWaters()
         total = set(pdb['residue_name'])
         pmask = pdb.maskProtein() + pdb.maskNA() + pdb.maskFrom('residue_name', self.extraResidues) + \
@@ -321,7 +321,7 @@ class SolvatedPDB(bi.PDBModel):
         s = self.take( self.atomRange() )
         s.__dict__.update(self.__dict__)
         return s
-    
+
 #    def checkWaters(self):
 #        "Detect if waters are present"
 #        maskWats = self.pdb.maskH2O()
@@ -360,4 +360,3 @@ if __name__ == '__main__':
     import os
 
 
-    

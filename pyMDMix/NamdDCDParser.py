@@ -36,7 +36,7 @@ from biskit.PDBModel import PDBModel
 from biskit.LogFile import StdLog
 
 class NamdDCDParser:
-    
+
     def __init__( self, fdcd, fref, box=0, pdbCode=None,
                   log=StdLog(), verbose=0):
         """
@@ -56,17 +56,17 @@ class NamdDCDParser:
         """
         self.fdcd = T.absfile( fdcd )
         self.dcd = open(self.fdcd, "r", 0)
-        
+
         if isinstance(fref, str) :
             self.ref=PDBModel(T.absfile(fref), pdbCode=pdbCode)
         elif fref :
             self.ref = fref
-            
+
         self.box  = box
         self.n = self.ref.lenAtoms()
         self.log = log
         self.verbose = verbose
-        
+
         self.readHeader()
         self.set_pointerInfo()
 
@@ -78,12 +78,12 @@ class NamdDCDParser:
         """
         f = self.dcd
         unpack = struct.unpack
-        
+
         # Check we are in the beggining of the file
         # or move there to read the header
         if f.tell() != 0:
             f.seek(0)
-        
+
         # First read header information and check correct file format
         header = struct.unpack(">I 4s 9I f 11I", f.read(92))
         if header[0] == 84 and header[1] == 'CORD' and header[-1] == 84 and header[-2] != 0:
@@ -105,7 +105,7 @@ class NamdDCDParser:
         else:
             f.close()
             sys.exit("Bad DCD Format")
-            
+
         # Read title information
         if (unpack('>I',f.read(4))[0] - 4) % 80 == 0:
             # Number of title lines
@@ -115,7 +115,7 @@ class NamdDCDParser:
         else:
             f.close()
             sys.exit("ERROR in title. Bad DCD format")
-        
+
         # Read number of atoms
         atomBlock = unpack('>3I', f.read(12))
         if atomBlock[-1] == 4:
@@ -123,7 +123,7 @@ class NamdDCDParser:
         else:
             f.close()
             sys.exit("Bad DCD format")
-        
+
         if verbose:
             print((self.title))
             print(("Number of atoms:", self.natoms))
@@ -132,28 +132,28 @@ class NamdDCDParser:
             print(("Final timestep:", self.ntot))
             print(("Steps between frames:", self.nsavc))
             print(("Time step of simulation:", self.delta))
-    
+
     def set_pointerInfo(self):
         """
         Store sizes for browsing the file later
         """
         # Header size is: 116 + 80* self.ntitle
         self.h_size = 116 + (80 * self.ntitle)
-        
+
         # Frame size
         # 4 bytes because it's floats per 3 axis per total num of atoms
         # Add the enclosing integers (two for each axis) = 6 * 4
         f_size = (3 * 4 * self.natoms) + 24
         if self.has_extrablock:
             f_size += 56
-        
+
         self.f_size = f_size
-           
+
     def read_charmm_extrablock(self):
-        
+
         f = self.dcd
         unpack = struct.unpack
-        
+
         # This block contains the box information
         if unpack('>I', f.read(4))[0] == 48:
             self.unitcell = npy.fromstring( f.read(48), dtype=">d")
@@ -161,16 +161,16 @@ class NamdDCDParser:
         else:
             f.close()
             sys.exit("ERROR in read_charmm_extrablock(). Bad DCD Format")
-            
+
     def read_dcdstep(self):
-      
+
         f = self.dcd
         size = struct.calcsize
-        
+
         # If there is box information
         if self.has_extrablock:
             self.read_charmm_extrablock()
-        
+
         # Read coordinates
         # Each coordinates block is enclosed by one integer
         # that we will skip all the times
@@ -182,9 +182,9 @@ class NamdDCDParser:
         f.read(8)
         xyz[:,2] = npy.fromstring(f.read(size('f')*self.natoms), dtype=">f4")
         f.read(4)
-        
+
         return xyz
-        
+
     def read_all(self):
         """
         Read all snapshots
@@ -192,17 +192,17 @@ class NamdDCDParser:
         # Go to the beggining of the frames
         f = self.dcd
         f.seek(self.h_size)
-        
+
         # Read Frames
         all_snap = npy.zeros([self.nset, self.natoms, 3], dtype=">f4")
         for i in range(self.nset):
             all_snap[i,:] = self.read_dcdstep()
-        
+
         return all_snap
-    
+
     def close(self):
         self.dcd.close()
-        
+
     def getFrame(self, i):
         """
         Read specific frame.
@@ -213,15 +213,15 @@ class NamdDCDParser:
         # for the desired frame and move there
         pointer = self.h_size + (self.f_size * i)
         f.seek(pointer)
-        
+
         return self.read_dcdstep()
-    
+
     def __getitem__(self, i):
         return self.getFrame(i)
- 
+
 
 
 if __name__ == '__main__':
-    
+
     Test()
-    
+

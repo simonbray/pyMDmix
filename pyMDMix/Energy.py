@@ -124,7 +124,7 @@ class EnergyConversion(object):
         else:
             ratio_correction = 1.
             self.log.debug("Only one residue in the mixture, no ratio correction applied.")
-                
+
         # Finally calculate expected number
         expectedVal = solv.getProbeProbability(probe)*numsnaps*ratio_correction
         self.log.debug("Replica %s probe %s. ExpectedValue: %.3f, snapshots: %i, Voxel: %.3f"%(replica.name, probe, expectedVal, numsnaps, voxel))
@@ -285,7 +285,7 @@ class EnergyConversion(object):
                 self.log.info("Expected value: %.3f, Temperature: %.2f"%(sumexpectval, t))
                 # Convert sumDensityGrid to free energies and apply penalty
                 RT = t* 0.001987
-                
+
                 # Get a mask of zero values (probably correspoding to protein positions
                 maskzeros = sumDensityGrid.data == 0
                 sumDensityGrid.data[maskzeros] = 1 # avoid zero-divisions
@@ -319,7 +319,7 @@ class EnergyConversion(object):
                 else:
                     self.log.warn("Could not save %s grid. Check reason!"%outname)
                     allSaved = False
-        
+
         #########################
         # INDEPENDENT SAVE MODE #
         #########################
@@ -343,7 +343,7 @@ class EnergyConversion(object):
                                 dgcorrection = self.calcDG0correction(replica, unit=unit) # Mean DG0 correction for all replicas
                                 dgData += dgcorrection
                                 suffix='_DG0'
-                            
+
                         g.update(dgData)
                         g.setType('MDMIX_RAW')
                         g.setProbe(probe)

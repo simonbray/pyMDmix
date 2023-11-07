@@ -64,16 +64,16 @@ class DensityGrids(object):
         self.replica = replica
 
         if not isinstance(replica, pyMDMix.Replica): raise DensityError("replica argument of wrong type.")
-                
+
         self.log.info("Setting up density grids calculation for replica %s"%replica.name)
         if not replica.isAligned(stepselection):
             raise DensityError("Cannot calculate density over non-aligned trajectory")
-        
+
         self.solvent = replica.getSolvent()
         if not self.solvent:
             raise DensityError("Cannot fetch solvent %s from the database! Make sure there are no conflicting files"%(replica.solvent))
         self.pdb = replica.getPDB()
-        
+
         self.probeselection= probeselection
         self.includeCOM= includeCOM
         self.onlyCOM = onlyCOM
@@ -87,12 +87,12 @@ class DensityGrids(object):
             if len(subregion[0]) != 3 or len(subregion[1] != 3):
                 raise DensityError("subregion argument should have two xyz coordinates: min and max. E.G.: ((x0,y0,z0),(x1,y1,z1))")
         self.subregion = subregion
-        
+
         # To be set un setup()
         self.probes = None
         self.container = None
         self.countGrids = {}
-        
+
         # Reference given or use replica's one?
         self.ref = osp.join(self.replica.path,self.replica.ref)
         if reference:
@@ -101,10 +101,10 @@ class DensityGrids(object):
                 self.ref=osp.abspath(reference)
             else:
                 raise DensityError("Reference PDB file %s not found."%reference)
-            
+
         self.setup()        
-        
-    
+
+
     def setup(self):
         self.__setProbes()
         self.prepareGrids()
@@ -135,7 +135,7 @@ class DensityGrids(object):
             validcoords = validx*validy*validz
             return xyz[validcoords,:]
         self.subregionfx = subfx
-            
+
     def __setProbes(self):
         if self.onlyCOM:
             self.log.info("Density calculation over COM probes ONLY")
@@ -156,21 +156,21 @@ class DensityGrids(object):
             l = self.solvent.probelist
             if self.includeCOM: l+=self.solvent.comprobes
             self.probes = l
-            
+
         self.log.info("Calculating density for probes: %s"%self.probes)
-        
+
     def __calcGridDimensionsAndOrigin(self):
         "From reference PDB calculate dimensions of the grid to be calculated and the origin"
         refpdb = bi.PDBModel(self.ref)
         maxdist = npy.sqrt(((refpdb.xyz.max(axis=0) - refpdb.xyz.min(axis=0))**2).sum())
         dimensions = npy.round(maxdist)
         origin = refpdb.xyz.mean(axis=0) - (dimensions/2.)
-        
+
         # Move origin to nearest half integer
         mask = npy.abs(origin - npy.trunc(origin)) < 0.5 # True when first decimal is bigger than 0.5
         origin = npy.trunc(origin)
         origin[mask == 0]+=0.5
-        
+
         return dimensions, origin
 
     def __calcSubRegionGrid(self):
@@ -178,12 +178,12 @@ class DensityGrids(object):
         min, max = npy.array(self.subregion)
         d = max-min # dmension + 2.5Angstroms buffer
         origin = min
-        
+
         # Move origin to nearest half integer
         mask = npy.abs(origin - npy.trunc(origin)) < 0.5 # True when first decimal is bigger than 0.5
         origin = npy.trunc(origin)
         origin[mask == 0]+=0.5
-                
+
         return d, origin
 
     def prepareGrids(self):
@@ -227,7 +227,7 @@ class DensityGrids(object):
             # Remove tempfile
             os.remove(data.filename)
             self.results[probe] = g
-        
+
         pyMDMix.browser.goback()
         return self.results
 
@@ -327,9 +327,9 @@ class DensityProtein(object):
         self.log.info("Setting up density grids calculation BY MASK for replica %s"%replica.name)
         if not replica.isAligned(stepselection):
             raise DensityError("Cannot calculate density over non-aligned trajectory")
-        
+
         self.pdb = replica.getPDB()
-        
+
         if outprefix: self.outprefix = outprefix
         else: self.outprefix = ''
 
@@ -340,13 +340,13 @@ class DensityProtein(object):
             if len(subregion[0]) != 3 or len(subregion[1] != 3):
                 raise DensityError("subregion argument should have two xyz coordinates: min and max. E.G.: ((x0,y0,z0),(x1,y1,z1))")
         self.subregion = subregion
-        
+
         # To be set in setup()
         self.container = None
         self.countGrid = None
-        
+
         self.setup()
-    
+
     def setup(self):
         self.prepareGrid()
         f = self.container.getIndexFunction()
@@ -376,7 +376,7 @@ class DensityProtein(object):
             self.subregionfx = subfx
         else:
             self.subregionfx = None
-                    
+
     def __calcGridDimensionsAndOrigin(self):
         "From reference PDB calculate dimensions of the grid to be calculated and the origin"
         from pyMDMix.PDB import SolvatedPDB
@@ -384,12 +384,12 @@ class DensityProtein(object):
         maxdist = npy.sqrt(((refpdb.xyz.max(axis=0) - refpdb.xyz.min(axis=0))**2).sum())
         dimensions = npy.round(maxdist) + 5 #Add 5 Ansgroms
         origin = refpdb.xyz.mean(axis=0) - (dimensions/2.)
-        
+
         # Move origin to nearest half integer
         mask = npy.abs(origin - npy.trunc(origin)) < 0.5 # True when first decimal is bigger than 0.5
         origin = npy.trunc(origin)
         origin[mask == 0]+=0.5
-                
+
         return dimensions, origin
 
     def __calcSubRegionGrid(self):
@@ -397,12 +397,12 @@ class DensityProtein(object):
         min, max = npy.array(self.subregion)
         d = max-min # dmension + 2.5Angstroms buffer
         origin = min
-        
+
         # Move origin to nearest half integer
         mask = npy.abs(origin - npy.trunc(origin)) < 0.5 # True when first decimal is bigger than 0.5
         origin = npy.trunc(origin)
         origin[mask == 0]+=0.5
-                
+
         return d, origin
 
     def prepareGrid(self):
@@ -445,7 +445,7 @@ class DensityProtein(object):
         # Remove tempfile
         os.remove(self.countGrid.filename)
         self.results['prot'] = g
-        
+
         pyMDMix.browser.goback()
         return self.results
 
@@ -477,7 +477,7 @@ class DensityGridsAllHA(object):
         self.log.info("Setting up density grid calculation for all heavy atoms in replica %s"%replica.name)
         if not replica.isAligned(stepselection):
             raise DensityError("Cannot calculate density over non-aligned trajectory")
-        
+
         self.solvent = replica.getSolvent()
         if not self.solvent:
             raise DensityError("Cannot fetch solvent %s from the database! Make sure there are no conflicting files"%(replica.solvent))
@@ -493,15 +493,15 @@ class DensityGridsAllHA(object):
             if len(subregion[0]) != 3 or len(subregion[1] != 3):
                 raise DensityError("subregion argument should have two xyz coordinates: min and max. E.G.: ((x0,y0,z0),(x1,y1,z1))")
         self.subregion = subregion
-        
+
         # To be set un setup()
         self.probes = None
         self.container = None
         self.countGrids = {}
-        
+
         if not isinstance(replica, pyMDMix.Replica): raise DensityError("replica argument of wrong type.")
         self.setup()
-    
+
     def setup(self):
         self.setHAinfo()
         self.prepareGrids()
@@ -539,19 +539,19 @@ class DensityGridsAllHA(object):
             self.subregionfx = subfx
         else:
             self.subregionfx = None
-                    
+
     def __calcGridDimensionsAndOrigin(self):
         "From reference PDB calculate dimensions of the grid to be calculated and the origin"
         refpdb = bi.PDBModel(osp.join(self.replica.path,self.replica.ref))
         maxdist = npy.sqrt(((refpdb.xyz.max(axis=0) - refpdb.xyz.min(axis=0))**2).sum())
         dimensions = npy.round(maxdist)
         origin = refpdb.xyz.mean(axis=0) - (dimensions/2.)
-        
+
         # Move origin to nearest half integer
         mask = npy.abs(origin - npy.trunc(origin)) < 0.5 # True when first decimal is bigger than 0.5
         origin = npy.trunc(origin)
         origin[mask == 0]+=0.5
-        
+
         return dimensions, origin
 
     def __calcSubRegionGrid(self):
@@ -559,12 +559,12 @@ class DensityGridsAllHA(object):
         min, max = npy.array(self.subregion)
         d = max-min # dmension + 2.5Angstroms buffer
         origin = min
-        
+
         # Move origin to nearest half integer
         mask = npy.abs(origin - npy.trunc(origin)) < 0.5 # True when first decimal is bigger than 0.5
         origin = npy.trunc(origin)
         origin[mask == 0]+=0.5
-                
+
         return d, origin
 
     def prepareGrids(self):
@@ -609,7 +609,7 @@ class DensityGridsAllHA(object):
             # Remove tempfile
             os.remove(data.filename)
             self.results[probe] = g
-        
+
         pyMDMix.browser.goback()
         return self.results
 
@@ -685,7 +685,7 @@ def DensityGrids_postprocess(results, replica, **kwargs):
     for probe, grid in list(results.items()):
         grid.writeDX(osp.join(replica.folder, probe+'.dx'))
     pyMDMix.browser.goback()
-    
+
 def DensityGridsAllHA_postprocess(results, replica, **kwargs):
     """
     Save results of a density calculation for replica *replica*.
@@ -708,7 +708,7 @@ class cppDensity(object):
             1) Writing of ptraj input scripts
             2) Execution of the ptraj commands
         The actions to be performed can be swritched using *run* and *write* arguments
-        
+
         :arg replica: Replica to work with
         :type replica: :class:`~Replicas.Replica`
         :arg str reference: File path to pdb to be used as reference for the trajectory alignment. It does not need to have all the atoms in the solvated system.
@@ -717,7 +717,7 @@ class cppDensity(object):
         :arg bool run: Execute ptraj scripts. Helps tuning only one of both actions.
         :arg bool write: Write ptraj input scripts.
         :arg bool waitend: When runing commands, wait until all steps are complete before exiting
-        
+
         :kwargs: All parameters for :meth:`writePtrajInput` can be modified with keyword arguments.
         """
         self.replica = replica
@@ -730,16 +730,16 @@ class cppDensity(object):
         self.probesmap = self.solvent.probesmap
         if kwargs['includeCOM']: self.probesmap['COM'] = self.solvent.name
         if kwargs['onlyCOM']: self.probesmap = {'COM': self.solvent.name, 'COM_WAT': 'WAT'}
-        
+
         # Check if we are using cpptraj
         if 'cpptraj' in S.AMBER_PTRAJ: 
             self.log.debug("Using cpptraj")
             self.cpptraj = True
         else: self.cpptraj = False
-        
+
         # Prepare reference with all atoms when cpptraj = True
         self.ref = osp.join(os.pardir, self.replica.ref)
-        
+
         if write: 
             self.log.info("Writing (cp)ptraj input files for density calculation")
             self.writePtrajInput(**kwargs)
@@ -753,7 +753,7 @@ class cppDensity(object):
             T.EXECUTOR.start()
 
             self.run()
-        
+
             # Exit executor
             if waitend: T.EXECUTOR.waitJobCompletion()
             T.EXECUTOR.terminate()

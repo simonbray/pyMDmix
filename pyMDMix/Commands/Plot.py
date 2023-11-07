@@ -26,4 +26,4 @@ class Plot(Command):
             if replicas: plot.plotMDAmber(replicas, outfilename=parserargs.outname, selectedsteps=stepselection)
         elif parserargs.plot_command == 'rmsd':
             if replicas: plot.plotRMSDReplicas(replicas, outfilename=parserargs.outname, selectedsteps=stepselection)
-                
+

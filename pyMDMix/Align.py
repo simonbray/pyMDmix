@@ -48,7 +48,7 @@ class Align(object):
             1) Writing of ptraj input scripts
             2) Execution of the ptraj commands
         The actions to be performed can be swritched using *run* and *write* arguments
-        
+
         :arg replica: Replica to work with
         :type replica: :class:`~Replicas.Replica`
         :arg str reference: File path to pdb to be used as reference for the trajectory alignment. It does not need to have all the atoms in the solvated system.
@@ -58,7 +58,7 @@ class Align(object):
         :arg bool write: Write ptraj input scripts.
         :arg bool warn: Print warning messages.
         :arg bool waitend: When runing commands, wait until all steps are complete before exiting
-        
+
         :kwargs: All parameters for :meth:`writePtrajInput` can be modified with keyword arguments.
         """
         self.replica = replica
@@ -67,18 +67,18 @@ class Align(object):
         self.nthreads = nthreads
         self.warn = warn
         self.waitend=waitend
-        
+
         # Print some info for logging
         stepsstr = ''
         if steps: stepsstr=': Selected steps - %s'%steps
         self.log.info("ALIGN: Replica %s %s"%(replica.name, stepsstr))
-        
+
         # Check if we are using cpptraj
         if 'cpptraj' in S.AMBER_PTRAJ: 
             self.log.debug("Using cpptraj")
             self.cpptraj = True
         else: self.cpptraj = False
-        
+
         # Prepare reference with all atoms when cpptraj = True
         self.ref = osp.join(os.pardir, self.replica.ref)      
         if reference:
@@ -90,7 +90,7 @@ class Align(object):
                 self.log.warn("Reference PDB file %s not found! Using Replica reference pdb: %s."%(reference, self.ref))
 
         if self.cpptraj: self.__alignRefAllAtoms()
-        
+
         if write: 
             self.log.info("Writing (cp)ptraj input files")
             self.writePtrajInput(**kwargs)
@@ -104,11 +104,11 @@ class Align(object):
             T.EXECUTOR.start()
 
             self.run()
-        
+
             # Exit executor
             if waitend: T.EXECUTOR.waitJobCompletion()
             T.EXECUTOR.terminate()
-    
+
     def __alignRefAllAtoms(self):
         """
         Cpptraj does not allow to use a reference PDB which contains different 
@@ -125,10 +125,10 @@ class Align(object):
 	    mask = pdb.maskProtein()
             alpdb = pdb.magicFit(ref, mask=mask.astype(int))
             alpdb.writePdb(newref)
-        
+
         self.ref = osp.join(os.pardir, newref)
         S.BROWSER.goback()
-    
+
     def __aligncmd(self, step):
         "Return ptraj execution command for step *step*"
         if not self.replica.checkProductionExtension([step])[step]:
@@ -138,13 +138,13 @@ class Align(object):
         # Check input file exists
         if not osp.exists(osp.join(path,inf)):
             raise AlignError("File %s does not exists in alignment folder of replica %s"%(inf, self.replica.name))
-        
+
         outf= inf.replace('.ptraj','_ptraj.log')
         top = os.pardir+os.sep+self.replica.top
         cmd = S.AMBER_PTRAJ+' {top} < {inf} &> {outf}'.format(top=top, inf=inf, outf=outf)
-        
+
         return cmd, path
-        
+
     def run(self):
         "Run centering process for steps selected at instantiation."
         self.log.info("Running alignment of trajectory in replica %s"%self.replica.name)
@@ -165,7 +165,7 @@ class Align(object):
         from .Amber import AmberWriter
         outrmsd = False
         outpdbavg = False
-        
+
         self.replica.go()
         if not osp.exists(self.replica.alignfolder): os.mkdir(self.replica.alignfolder)
 
@@ -190,7 +190,7 @@ class Align(object):
             if not ext:
                 if self.warn: self.log.warn("Production trajectory file for step %i not found. Writting ptraj input anyway using default NETCDF."%i)
                 ext = 'nc'
-                
+
             n = self.replica.mdoutfiletemplate.format(step=i, extension=ext)
             trajin = mdpath+os.sep+n
             trajout=n

@@ -7,13 +7,13 @@ class Command(object):
     def __init__(self):
         self.cmdstring = ""
         pass
-    
+
     def create_parser(self, subparser):
         pass
-    
+
     def action(self, parserargs):
         pass
-    
+
     def subparseronreplica(self, subprs, name, help, extras=True):
         sp = subprs.add_parser(name, help=help)
         sp.add_argument("mode", choices=('all','bysolvent','byname','group'), action="store", default="all", help="Perform selection of replicas based on solvent name, replica names or groups. If 'all', do action on all replicas.")
@@ -45,7 +45,7 @@ class Command(object):
                 #Return only replicas matching solvents in selection list
                 returnlist = []
                 [returnlist.append(r) for r in list(project.replicas.values()) if r.solvent in selection]
-                
+
                 if returnlist:
                     print("Selected replica names: %s"%[r.name for r in returnlist])
                     return returnlist
@@ -62,14 +62,14 @@ class Command(object):
                     return returnlist
                 else:
                     raise MDMixError("Replicas not found.")
-            
+
             if parserargs.mode == 'group':
                 for s in selection:
                     if s not in project.listGroups():
                         print("Groupname %s not in current project. Skipping..."%s, file=sys.stderr)
                     returnlist = []
                     [returnlist.extend(project.getGroup(s)) for s in selection if s in project.listGroups()]
-                    
+
                     if returnlist:
                         print("Selected replica names: %s"%[r.name for r in returnlist])
                         return returnlist

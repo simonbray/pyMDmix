@@ -76,25 +76,25 @@ class PDB2PQRInterface(object):
     """
     #: PDB2PQR Webserver
     PDB2PQRWEBSITE = "http://nbcr-222.ucsd.edu/pdb2pqr_1.8/"
-    
+
     #: Form control names
     KNOWNCONTROLS = set(['PDBSOURCE', 'PDBID', 'PDB', 'FF', 'USERFF', 'USERNAMES', 
                         'FFOUT', 'DEBUMP', 'OPT', 'PROPKA', 'PH', 'LIGANDCHECK', 
                         'LIGAND', 'INPUT', 'CHAIN', 'WHITESPACE', 'TYPEMAP', 'NEUTRALN', 
                         'NEUTRALC', None])
-    
+
     MANDATORYCONTROLS = set(['PDBSOURCE','PDBID','PDB','FF','FFOUT','PROPKA','PH'])
-    
+
     def __init__(self):
         self.log = logging.getLogger("PDB2PQRInterface")
-        
+
         # Prepare browser
         self.br = mechanize.Browser()
 #        self.br.set_all_readonly(False)    # allow everything to be written to
         self.br.set_handle_robots(False)   # ignore robots
         self.br.set_handle_refresh(False)  # can sometimes hang without this
         self.br.addheaders = [('User-agent', 'Firefox')]
-        
+
         # Open webserver url and check form
         self.setConnection()
         self.checkSite()
@@ -108,10 +108,10 @@ class PDB2PQRInterface(object):
             self._html = self.br.open(PDB2PQRInterface.PDB2PQRWEBSITE)
         except Exception as err:
             raise ConnectionError(err)
-        
+
         # If correct, select first form
         self.br.select_form(nr=0)
-    
+
     def checkSite(self):
         "Control wether the site has changed the form. If so, exit as everything will fail."
         # Check that html website is similar to the content when this module was written
@@ -121,7 +121,7 @@ class PDB2PQRInterface(object):
         ratio = difflib.SequenceMatcher(lambda x: x == " ", checkhtml, webhtml).ratio()        
         if ratio < 0.9:
             self.log.warn('Website seems different since this module was coded. Similarity: %3f'%ratio)
-        
+
         # Check form has mandatory controls
         controls = set([c.name for c in self.br.form.controls])
         if controls != PDB2PQRInterface.KNOWNCONTROLS:
@@ -150,7 +150,7 @@ class PDB2PQRInterface(object):
         Main function to
         """
         import fnmatch
-        
+
         if pdbfile:
             self.__uploadFile(pdbfile)
         elif pdbid:
@@ -175,7 +175,7 @@ class PDB2PQRInterface(object):
             if l.text == 'click here':
                 results_url = l.url
         return self.fetchResults(results_url, twait=twait, tries=tries)
-        
+
     def fetchResults(self, url, twait=3, tries=999):
         "Download PQR file from results url"
         self.br.open(url)
@@ -183,13 +183,13 @@ class PDB2PQRInterface(object):
         match = re.compile('Message: (\w+)')
         while tries:
             response = self.br.reload()
-            
+
             # Fetch Message
             status = match.search(response.read())
             if status: status = status.groups()[0]
             else:
                 raise PDB2PQRError("Error scraping reuslts website. Check website: %s."%self.br.geturl())
-            
+
             if status == 'complete':
                 print("Done")
                 done = True
@@ -200,12 +200,12 @@ class PDB2PQRInterface(object):
                 print("Running... %d\r"%tries, end=' ')
             else:
                 raise PDB2PQRError("Error in job execution. Check website: %s."%self.br.geturl())
-        
+
         print()
-        
+
         if not done:
             raise PDB2PQRError("Job execution timed out. Check later website for results: %s."%self.br.geturl())
-            
+
         # If link was found download pqr file
         pqrout = None
         for l in self.br.links():
@@ -229,7 +229,7 @@ class PQRParseFile( PDBParseFile ):
         """
         PDBParseFile.__init__(self, *args, **kwargs)
         self.inpqr = pqr_in
-    
+
     def getModel(self):
         return self.parse2new(self.inpqr)
 
@@ -295,7 +295,7 @@ class PQRParseFile( PDBParseFile ):
                            '\ERROR: ' + T.lastError() + msg)
 
         model.setSource( source )
-        
+
     def __collectAll( self, fname, skipRes=None, headPatterns=[] ):
         """
         Parse ATOM/HETATM lines from PDB. Collect coordinates plus
@@ -351,7 +351,7 @@ class PQRParseFile( PDBParseFile ):
                     continue
 
                 if not line: break
-                
+
                 ## header handling
                 if in_header and line[0] == 'HEADER':
                     info.update( self._PDBParseFile__parseHeader( line ) )
@@ -418,7 +418,7 @@ class PQRParseFile( PDBParseFile ):
 #                    print a
                     xyz.append( a['position'] )
                     del( a['position'])
-                    
+
                     for k, v in list(a.items()):
                         aProfs[k].append( v )
 
@@ -537,7 +537,7 @@ class AmberPDBCleaner(bi.AmberParmBuilder):
         ## concat cap on chain
         m_chain = m_chain.concat( m_nme.resModels()[-1] )
         m_chain.mergeChains(0, renumberAtoms=True)
-        
+
         ## should be obsolete now
         if getattr( m_chain, '_PDBModel__terAtoms', []) != []:
             m_chain._PDBModel__terAtoms = [ len( m_chain ) - 1 ]
@@ -585,7 +585,7 @@ class AmberPDBCleaner(bi.AmberParmBuilder):
         try:
             if self.verbose: self.log.add( 'Cleaning PDB file for Amber:' )
             self.m.setXyz(self.m.xyz - self.m.center()) # center object
-            
+
             if keepwaters:
                 wats = self.m.compress(self.m.maskH2O())
 
@@ -604,7 +604,7 @@ class AmberPDBCleaner(bi.AmberParmBuilder):
                 if self.verbose:
                     self.log.add( 'Adding ACE cap to chain %i' % i )
                 if cap: m = self.capACE( m, i )
-            
+
             for i in capC:
                 if self.verbose:
                     self.log.add( 'Adding NME cap to chain %i' % i )
@@ -633,9 +633,9 @@ class AmberPDBCleaner(bi.AmberParmBuilder):
                     wats.removeRes(clashres)                
                 m = m.concat(wats)
                 m.renumberResidues( addChainId=1 )
-                
+
             self.m = m
-            
+
             return m
 
         except IOError as why:
@@ -649,7 +649,7 @@ class AutoPrepare(object):
     Giving an input PDB, automatically create an amber object file (OFF) that can be simulated.
     Will protonate the system using PDB2PQR server and add capping NME and ACE at each terminus
     and save the resulting correctly protonated pdb for user inspection. 
-    
+
     If everything is correct, the user can come back and finally create the object file.
     """
     def __init__(self, pdb=False, chains=[], protonate=False, pdbid=None, *args, **kwargs):
@@ -669,7 +669,7 @@ class AutoPrepare(object):
                 self.protonatePDB(pdb=self.pdb, **kwargs)
         else:
             pass
-        
+
         # Finally do cleaning if self.pdb was set
         if self.pdb: self.cleanPDB(pdb=None, chains=self.chains, **kwargs)
 
@@ -677,14 +677,14 @@ class AutoPrepare(object):
     def cleanPDB(self, pdb=None, chains=[], hetatm=True, keepwaters=True, cap=True, capC=[], capN=[], **kwargs):
         """
         TODO Document better
-        
+
         - Rename residues according to the protonation state (HID HIE or HIP, etc.)
         - Rename CYS involved in disulfide bonds to CYX.
         - Remove all Hydrogens to let tLeap add them.
         - Cap with NME and ACE the terminus of a PDBModel.
         - Remove or keep the original waters. If original waters are kept, those clashing with the cappings will 
          still be removed.
-         
+
          :return: Cleaned pdb
          :rtype: PDBModel
         """
@@ -696,12 +696,12 @@ class AutoPrepare(object):
         if chains and not capC: capC=list(range(len(chains)))
         if chains and not capN: capN=capC
         self.pdb = cleaner.cleanPDB(hetatm=hetatm, keepwaters=keepwaters, cap=cap, capC=capC, capN=capN, **kwargs)
-               
+
     def protonatePDB(self, pdb=None, tries=50, twait=3, **kwargs):
         """
         Use PDB2PQR webserver to protonate the PDB following Propka predictions.
         PDB can be either a local file or a PDBID.
-        
+
         TODO document
         """
         if pdb:
@@ -711,22 +711,22 @@ class AutoPrepare(object):
                 file = pdb
             else:
                 raise AutoPrepareError('pdb argument must be a filepath or a PDBModel with valid source files.')
-            
+
             if not osp.exists(file): raise AutoPrepareError('pdbfile %s not found.'%fi)
         elif self.pdb:
             file = self.pdb.source.original()
             if not osp.exists(file): raise AutoPrepareError('pdbfile %s not found.'%fi)
         else:
             raise AutoPrepareError('protonatePDB needs a pdb. Set a PDB with setPdb() or give as argument.')
-        
+
         self.b = PDB2PQRInterface()
         self.pdb = self.b.protonatePDB(pdbfile=file,twait=twait,tries=tries, **kwargs)
-    
+
     def fetchPDBandProtonate(self, pdbid, tries=50, twait=5, **kwargs):
         "Fetch a pdb by PDBID and protonate using PDB2PQR server"
         self.b = PDB2PQRInterface()
         self.pdb = self.b.protonatePDB(pdbid=pdbid,twait=twait,tries=tries, **kwargs)
-    
+
     def setPdb(self, pdb):
         """
         Set PDB to prepare.
@@ -740,15 +740,15 @@ class AutoPrepare(object):
 
     def getPdb(self):
         return self.pdb
-    
+
     def savePdb(self, outname):
         "Save current PDB"
         self.pdb.writePdb(outname)
-    
+
     def saveOFF(self, outname, inpdb=None, unitname='sys', extraff=[]):
         "From a PDBModel or File, load into tLeap and save as ObjectFile."
         from .Amber import AmberCreateSystem
-               
+
         if not inpdb and self.pdb: inpdb = self.pdb
         else: raise AutoPrepareError("Input needed.")
 
@@ -757,7 +757,7 @@ class AutoPrepare(object):
         outoff = outname+'.lib'
 
         return osp.abspath(outoff)
-          
+
 # AUXILIAR FUNCTIONS
 def prepareOFF(pdbinput, outfname, ff=[]):
     """Prepare a Amber Object File Format (OFF) file from a PDB. 
@@ -766,8 +766,8 @@ def prepareOFF(pdbinput, outfname, ff=[]):
     :arg list ff: Forcefield / Frcmod files to load. If empty, use defaults.
     """
     pass
-          
-          
+
+
 # TESTING
 from . import test as BT
 
@@ -789,7 +789,7 @@ class Test(BT.BiskitTest):
         self.pqr = PQRParseFile(f_in).getModel()
 #        self.pqr.writePdb(f_check)
         self.comparePDB(self.pqr, self.checkpdb)
-       
+
     def test_PDB2PQR_byFile(self):
         """Test PDB2PQR interface. Protonate Uploaded PDB file."""
         f_in = T.testRoot('autoprepare', '1yer.pdb')
@@ -797,7 +797,7 @@ class Test(BT.BiskitTest):
         self.b = PDB2PQRInterface()
         pqr_out = self.b.protonatePDB(pdbfile=f_in,twait=2)
         self.comparePDB(pqr_out, pqr_check)
-        
+
     def test_PDB2PQR_byID(self):
         """Test PDB2PQR interface. Protonate PDB selected by ID. """
         pqr_check = PQRParseFile(T.testRoot('autoprepare', '1yer.pqr')).getModel()
@@ -827,4 +827,4 @@ class Test(BT.BiskitTest):
 if __name__ == "__main__":
     #BT.localTest()
     Test().autoprepare_2()
-    
+

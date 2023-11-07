@@ -208,7 +208,7 @@ def parseSettingsConfigFile(settingsConfigFile, noSolvent=False):
     """
     import os.path as osp
     from .Parsers import MDSettingsConfigFileParser
-    
+
     if not osp.exists(settingsConfigFile): raise BadFile("File %s not found."%settingsConfigFile)
     if noSolvent: sets = MDSettingsConfigFileParser().parseNoSolvent(settingsConfigFile)
     else: sets = MDSettingsConfigFileParser().parse(settingsConfigFile)
@@ -226,16 +226,16 @@ class Test(BT.BiskitTest):
         watdefaults = MDSettings(solvent='WAT')
         self.assertEqual(defaults.trajfrequency, watdefaults.trajfrequency)
         self.assertEqual(defaults.restrMode, watdefaults.restrMode)
-        
+
     def test_MDSettings_CFG(self):
         etaha = MDSettings(solvent='ETA', restrMode='HA', restrForce=0.1)
         etacfg = parseSettingsConfigFile(T.testRoot('mdsettings','sets1.cfg'))
         self.assertEqual(etaha, etacfg[0])
-    
+
     def test_MDSettings_snapshots(self):
         sets = MDSettings(prod_steps=1000000, trajfrequency=1000) #1Milion = 2ns at 1000 steps = 1000 snaps per nano x 20ns default 
         self.assertEqual(sets.nsnaps, 20000)
-        
+
     def test_MDSettings_ntrajfiles(self):
         sets = MDSettings(prod_steps=1000000, nanos=50) # 50ns and 2ns per file: 25 files?
         self.assertEqual(sets.ntrajfiles, 25)

@@ -175,7 +175,7 @@ class Solvent(object):
             >>> solvent = Solvent(name='mysolvent',info='custom solvent',off='path/to/objectfile.off',..., myspecialattr = 300)
             >>> print solvent.myspecialattr
             300
-                    
+
         """
         self.name = name
         self.info = info
@@ -195,7 +195,7 @@ class Solvent(object):
         self.off = None
         self.volume = None
         self.residues = None
-        
+
         # ADD other attributes from options file
         # can be used in specific actions later
         for key, val in list(kwargs.items()):
@@ -227,7 +227,7 @@ class Solvent(object):
         probelist = []
         for probe, mask in list(probesmap.items()):
             d = T.amberMaskToDict(mask)
-            
+
             # Check all residues in the mapping are present in the solvent box
             resnames = set(d.keys())
             if not resnames <= set([x.name for x in self.residues]): # all resnames should be present in the off
@@ -350,7 +350,7 @@ class Solvent(object):
         ###################################################
         #     Read frcmod and off files and fecth info    #
         ###################################################
-        
+
         # If frcmod files given, read in content
         # Path should be correct. Will be stored in self.frcmod dictionary with the filename as key.
         if self.frcmodpaths:
@@ -380,7 +380,7 @@ class Solvent(object):
         else:
             # Correct. Fecth residue instances from off
             self.residues = [offparser.getResidue(r) for r in unitresidues]
-        
+
         # Store atomic information for each residue
 #        self.atoms = {}
 #        [self.atoms.update({res:offparser.getAtoms(res, skipH=False)}) for res in self.residues]
@@ -405,30 +405,30 @@ class SolventManager(object):
         strout+='-'*50
         strout+='\n'
         return strout
-    
+
     def __repr__(self):
         return "SolventManager Instance"
 
     def __getSection(self, dict, name):
         """
         Mandatory get an key named *name* from de dictionary *dict* or raise exception.
-        
+
         :arg dict dict: Dictionary which should contain section named :attr:`name`
         :arg str name: Mandatory section to get
-        
+
         :returns: Dictionary with the section content.
         :rtype: dict
-        
+
         :raise MissingSection: Section is not present in :attr:`dict`
         """
         sect = dict.get(name)
         if not sect: raise MissingSection("%s section missing in Solvent Config file."%name)
         return sect
-    
+
     def __getOption(self, dict, name):
         """
         Mandatory get a key named *name* from de dictionary *dict* or raise exception.
-        
+
         :arg dict dict: Dictionary which should contain` section named :attr:`name`
         :arg str name: Mandatory option to get
 
@@ -543,7 +543,7 @@ class SolventManager(object):
             self.log.info("Solvent has EXTRA field. Will add each flag to attributes.")
             extra = self.__todict(extra)
         d.update(extra)
-        
+
         return d
 
     def createSolvent(self, configfile):
@@ -613,7 +613,7 @@ class SolventManager(object):
         """
         Save a Solvent isntance in the database :attr:`db` or default DB locations.
         Selection of database is done in :meth:`self.__getDatabase`.
-        
+
         :arg solvent: Solvent object to save.
         :type solvent: :class:`Solvent`
         :arg str db:        Database where to save the solvent.
@@ -668,14 +668,14 @@ class SolventManager(object):
         possible = []
         for solv in list(self.getDatabase().values()):
             if probename in solv.probes or probename in solv.comprobes: possible.append(solv)
-        
+
         if not possible:
             self.log.warn("No solvent found for probe name %s"%probename)
             return False
         elif len(possible) > 1:
             self.log.warn("More than one solvent found for probe named %s: %s. Returning %s."%(probename, possible, possible[0].name))
         return possible[0]
-    
+
     def listSolvents(self, db=None):
         """
         Fetch solvent names from the database.

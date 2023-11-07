@@ -11,7 +11,7 @@ class Queue(Command):
         queue_parser = subparsers.add_parser('queue', help="Queue input files options.")
         queue_parser.add_argument("action", choices=('list','write'), help="LIST: Show installed queue system templates. WRITE: Write input files for all replicas in current project or for REPLICA in current folder.")
         queue_parser.add_argument("-n", action="store", dest="queuename", help="WRITE action: queue system to use. Mandatory.")
-       
+
 
     def action(self, parserargs):
         if parserargs.action == 'list':

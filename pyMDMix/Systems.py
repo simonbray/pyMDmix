@@ -80,7 +80,7 @@ class System(object):
                 import random, string
                 randstr = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(3))
                 name = 'mdmix_system_'+randstr
-            
+
             self.name = name
             self.extraResList = extraResList
             self.sysFilePath = self.name+'.msys'
@@ -166,7 +166,7 @@ class System(object):
             - Rename HIS residues according to protonation
             - Rename CYS to CYX if needed, and disulfide bridges built in tLeap
             - Removal of all hydrogen atoms to let tLeap add them back.
-            
+
         :arg str amberPDB: Path to PDB file complying with amber specifications.
         :arg list FF: Forcefield names and modification files that might be needed to correctly interpret the PDB by tLeap.
 
@@ -188,12 +188,12 @@ class System(object):
     def setOFF(self, amberOFF, unitname=None):
         """
         Save Amber Object file as :class:`OFFManager.OFFManager` object in :attr:`amberOFF`. :attr:`unitName` will be set.
-        
+
         :arg str amberOFF: Path to amber object file.
         :arg str unitname: Name of the unit we should use in the future. If not given, automatically take the first unit found in the file.
         """
         from .OFFManager import OFFManager
-        
+
         # Special case: test
         # Grab off from testing directory
         if amberOFF.lower() == 'test': 
@@ -201,7 +201,7 @@ class System(object):
             amberOFF = T.testRoot('pep','pep.off')
             self.name = 'testsystem'
             self.sysFilePath = self.name+'.msys'
-        
+
         self.amberOFF = OFFManager(amberOFF)
         if not unitname:
             units = self.amberOFF.getUnits()
@@ -220,7 +220,7 @@ class System(object):
         """
         if not self.amberOFF:
             raise SystemError("Can not solvate if no Amber Object File is assigned.")
-        
+
         if isinstance(solvent, str): solvent = Solvents.getSolvent(solvent)
         if not solvent:
             raise SystemError('Invalid solvent instance or name.')
@@ -326,23 +326,23 @@ class SolvatedSystem(System):
         self.tmp_crd = None
         self.tmp_pdb = None
         self.solvent = solvent #: If System contains solvated system, identify the solvent
-        
+
         if top and crd: self.setTopCrd(top, crd)       
-        
+
     def __repr__(self):
         return "%s SolvatedSystem"%self.name
 
     def __add__(self, other):
         from .MDSettings import MDSettings
         from .Replicas import Replica
-        
+
         if isinstance(other, MDSettings): other = [other]
         if isinstance(other, list):
             # Check elements are MDSettings objects
             out = []
             for el in other:
                 if isinstance(el, MDSettings):
-                   out.append(Replica(self, el))
+                    out.append(Replica(self, el))
 
             if len(out) == 1: return out[0]
             return out
@@ -369,7 +369,7 @@ class SolvatedSystem(System):
 
         if not self.solvent:
             self.solvent = self.getSolvatedPDB().solvent
-            
+
     def saveTopCrd(self, prefix):
         """
         Save top disk file system topology and coordinates (amber PRMTOP and PRMCRD).
@@ -430,7 +430,7 @@ class SolvatedSystem(System):
         self.tmp_top = None
         self.tmp_crd = None
         self.tmp_pdb = None
-    
+
     def setPDBfromTOPCRD(self):
         "Save a PDB file from the TOP and CRD files in attributes."
         import time
@@ -442,14 +442,14 @@ class SolvatedSystem(System):
         create = AmberCreateSystem(informative=False)
         create.ambpdb(self.tmp_top, self.tmp_crd, self.tmp_pdb)
         time.sleep(1) # delay to allow ampdb work
-        
+
         self.pdb = open(self.tmp_pdb,'r').read()
         self.cleanTmp()
 
     def solvate(self, **kwargs):
         pass
 
-        
+
 def loadSystem(systemfile=None):
     """
     Load existing system. 
@@ -499,7 +499,7 @@ class Test(BT.BiskitTest):
         T.BROWSER.chdir(self.f_out)
         self.r1 = System(amberPDB=pdb)
         solvatedsys = self.r1.solvate('WAT', tmp=self.f_out)
-        
+
     def test_SolvatedSystem(self):
         top = T.testRoot('pep','pep.prmtop')
         crd = T.testRoot('pep','pep.prmcrd')

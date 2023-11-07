@@ -75,7 +75,7 @@ class Project(object):
                 raise BadFile("Project File %s not found"%fromfile)
         else:
             import collections
-            
+
             self.version = S.VERSION
             self.projName = name                 #: Name of the project
             self.projFileName = name+'.mproj'    #: Name of the file that will be generated to save all project information
@@ -84,7 +84,7 @@ class Project(object):
 
             self.log = logging.getLogger("Project %s"%name)
             self.__folderscreated = False
-            
+
             # Path to store all replicas / and look for them there
             self.replPaths = replPaths
 
@@ -98,7 +98,7 @@ class Project(object):
     def __getitem__(self, replicaname):
         "Return replica by name"
         return self.replicas.get(replicaname)
-    
+
     def __str__(self):
         "Do some pretty printing of most important attributes"
         sysinfo = ''
@@ -192,26 +192,26 @@ class Project(object):
         "General method to call method *action* with arguments in **kwargs** to all replicas in replicalist. If list is empty, apply to all known replicas"
         if not replicalist: replicalist = list(self.fetchReplicas().values())
         process = []
-        
+
         # Set executor number of threads here and
         # don't let replicas to alter it by setting ncpus to false
         ncpus = kwargs.get('ncpus')
         kwargs['ncpus'] = False
         ncpus = ncpus or 1
         T.EXECUTOR.changeNthreads(ncpus)
-        
+
         for r in replicalist:
             if not isinstance(r, Replica): 
                 self.log.warn("Unexpected type %s. Expected Replica type."%type(r))
                 continue
-                
+
             try: meth = getattr(r, action)
             except: raise ProjectError("Replica do not have method with name %s"%action)
-            
+
             import multiprocessing as multi
             self.log.debug("Submitting replica %s action %s"%(r.name, action))
             process.append(multi.Process(target=meth, kwargs=kwargs))
-        
+
         # Start jobs
         [p.start() for p in process]
         [p.join() for p in process]
@@ -219,7 +219,7 @@ class Project(object):
     def getSystem(self, sysname):
         "Return System object with name *sysname*. Must exists in current project folder."
         return self.fetchSystems().get(sysname)
-    
+
     def getReplica(self, replicaname):
         "Return System object with name *sysname*. Must exists in current project folder."
         return self.fetchReplicas().get(replicaname)
@@ -280,7 +280,7 @@ class Project(object):
                     r = Replica(fromfile=osp.join(root, f))
                     repls.append(r)
         T.BROWSER.chdir(cwd)
-        
+
         # Check no duplicate names exist
         names = []
         duplicate = []
@@ -291,7 +291,7 @@ class Project(object):
                 self.log.warning("Detected a duplicated replica with name %s in path %s"%(r.name,r.path))
                 self.log.warning("Skipping this replica. Make sure the replica file (*.mrepl) are located in the right directory and no duplicate names exist")
                 duplicate.append(i)
-                
+
         self.replicas = dict([(r.name, r) for i,r in enumerate(repls) if not i in duplicate])
         self.solventCounter.clear()
         for r in repls: self.solventCounter[r.solvent] += 1
@@ -321,7 +321,7 @@ class Project(object):
         This method to work requires that the expected project file (:attr:`Project.projFileName`) is placed inside the current working directory.
         """
         path = path or T.BROWSER.getcwd()
-            
+
         # Check expected project file exists inside *path*
         if not osp.exists(osp.join(path, self.projFileName)):
             raise ProjectError("Trying to set project path to folder %s that does not contain expected project file %s"%(path, self.projFileName))
@@ -380,7 +380,7 @@ class Project(object):
         """
         groupnames = self.replicagroups.get(groupname)
         if not groupname: return False
-        
+
         return [self.replicas.get(r) for r in groupnames]
 
     def removeGroup(self, groupname):
@@ -397,7 +397,7 @@ class Project(object):
     def extendSimulations(self, replicalist, nanos):
         """
         Extend simulation for existing replicas.
-        
+
         :arg list replicalist: List of :class:`Replicas.Replica` instances or strings to extend.
         :arg int nanos: Number of nanoseconds to add to current replica nanoseconds. 
         """
@@ -409,11 +409,11 @@ class Project(object):
             r.setNanos(r.nanos+nanos)
             r.createMDInput()
         return
-    
+
     def alignReplicas(self, replicalist, ncpus=1, steps=[], waitend=True, **kwargs):
         """
         Run alignment process on replicas in replicalist
-        
+
         :arg list replicalist: List of replica instances
         :arg int ncpus: Threads to start
         :arg list steps: Steps to align. If emtpy: analyze all.
@@ -422,11 +422,11 @@ class Project(object):
         self.log.info("Running alignment for replicas %s"%replicalist)
         self.applyReplicas('runAlignment',replicalist, steps=steps, ncpus=ncpus, **kwargs)
         if waitend: T.EXECUTOR.waitJobCompletion()
-        
+
     def calc_cppdensityReplicas(self, replicalist, ncpus=1, waitend=True, **kwargs):
         """
         Run density calculation process on replicas in replicalist
-        
+
         :arg list replicalist: List of replica instances
         :arg int ncpus: Threads to start (normal will be 1)
         :arg list steps: Steps to use for the density calculation. If emtpy: analyze all.
@@ -435,7 +435,7 @@ class Project(object):
         self.log.info("Running cpp density calculation for replicas %s"%replicalist)
         self.applyReplicas('runcppDensity',replicalist, ncpus=ncpus, **kwargs)
         if waitend: T.EXECUTOR.waitJobCompletion()
-    
+
     def write(self):
         "Save object __dict__ to pickled file."
         with FileLock(self.projFilePath) as lock:

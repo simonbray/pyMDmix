@@ -83,17 +83,17 @@ class NAMDWriter(object):
         """
         Create in the current folder a pdb with restraint force in B-factor column for NAMD input.
         The reference is the starting CRD file if **inputpdb** is not given. Output name will be *restrains.pdb*.
-        
+
         :args replica: Replica to work with. If **False**, work with loaded replica at instantiation.
         :type replica: :class:`~Replicas.Replica`
-        
+
         :args str inputpdb: PDB file path to use as reference coordinates for the restraints. If **False**, use replica.pdb as reference.
-        
+
         :return: True if file correctly saved or replica.restrMode == FREE. False otherwise.
         """        
         replica = replica or self.replica
         if not replica: raise NAMDWriterError("Replica not assigned.")
-        
+
         replica.go()
         self.log.info("Creating restraints.pdb with reference positions and restraining forces at b-factor column")
         if inputpdb:
@@ -126,7 +126,7 @@ class NAMDWriter(object):
         pdb['temperature_factor'] = npy.zeros(len(pdb))
         pdb['temperature_factor'][maskAtoms] = force
         pdb.writePdb('restrains.pdb')
-        
+
         exists = osp.exists('restrains.pdb')
         if exists: self.log.debug("restraints.pdb correctly saved")
         replica.goback()
@@ -216,16 +216,16 @@ class NAMDWriter(object):
         """
         replica = replica or self.replica
         if not replica: raise NAMDWriterError("Replica not assigned.")
-        
+
         T.BROWSER.gotoReplica(replica)
-        
+
         restr = ''
         if replica.hasRestraints:
             if not replica.minimizationAsRef: restr = self.restr
             else: 
                 self.log.warn('Use of Minimized structure as restraint reference is still not possible with NAMD. Will use starting PRMCRD.')
                 restr = self.restr
-        
+
         formatdict = {'top':replica.top, 'crd':replica.crd, 'restraints':restr, 
                         'box':self.getBoxFromCRD(replica.crd).max(), 'timestep':int(replica.md_timestep),
                         'freq':replica.trajfrequency}
@@ -234,7 +234,7 @@ class NAMDWriter(object):
         open(out,'w').write(self.minT.substitute(formatdict))
         exists = osp.exists(out)
         T.BROWSER.goback()
-        
+
         return exists
 
     def writeEqInput(self, replica=False):
@@ -244,10 +244,10 @@ class NAMDWriter(object):
         """
         replica = replica or self.replica
         if not replica: raise NAMDWriterError("Replica not assigned.")
-        
+
         restr = ''
         if replica.hasRestraints: restr = self.restr
-            
+
         T.BROWSER.gotoReplica(replica)
         formatdict = {'top':replica.top, 'crd':replica.crd, 'restraints':restr, 
                         'timestep':replica.md_timestep, 'freq':replica.trajfrequency}
@@ -276,7 +276,7 @@ class NAMDWriter(object):
         eq2out = replica.eqfolder+os.sep+'eq2.in'
         open(eq2out,'w').write(self.eqNPT.substitute(formatdict))
         exists = osp.exists(eq1out) and osp.exists(eq2out)
-        
+
         T.BROWSER.goback()
         return exists
 
@@ -287,12 +287,12 @@ class NAMDWriter(object):
         """
         replica = replica or self.replica
         if not replica: raise NAMDWriterError("Replica not assigned.")
-        
+
         T.BROWSER.gotoReplica(replica)
-        
+
         restr = ''
         if replica.hasRestraints: restr = self.restr
-        
+
         # PRODUCTION
         # Prepare md configuration files for each trajectory file
         substDict = {'top':replica.top, 'crd':replica.crd, 'restraints':restr,
@@ -319,16 +319,16 @@ class NAMDWriter(object):
 
             substDict['first_step'] = substDict['final_step']
             substDict['prev_out'] = substDict['post_out']
-        
+
         exists = npy.all([osp.exists(f) for f in outfiles])
         T.BROWSER.goback()
-        
+
         return exists
-        
+
     def writeReplicaInput(self, replica=False):
         replica = replica or self.replica
         if not replica: raise NAMDWriterError("Replica not assigned.")
-        
+
         T.BROWSER.gotoReplica(replica)
         self.log.info("Writing NAMD simulation input files for replica %s"%replica.name)
 
@@ -348,11 +348,11 @@ class NAMDWriter(object):
 
         if not (minok and eqok and mdok): 
             raise NAMDWriterError("MD input not generated for replica %s"%replica.name)
-        
+
         self.log.info("MD Input OK")
         T.BROWSER.goHome()
         return True
-        
+
 class NAMDCheck(object):
     """
     Class to control execution status of an NAMD simulation process.
@@ -516,27 +516,27 @@ class NAMDCheck(object):
     def getSimVolume(self, replica=False, step=False, boxextension=False):
         """
         Fetch simulation volume information from restart files. 
-        
+
         :arg Replica replica: Replica to study. If false, will take replica loaded in initalization.
         :arg int step: Step to fetch volume for. If False, will identify last completed production step and use that one.
         :arg str boxextension: Extension for the output file containing the restart information. DEFAULT: xsc.
-        
+
         :return float Volume: Simulation volume.
         """
         replica = replica or self.replica
         if not replica: raise NAMDCheckError("Replica not assigned.")
         boxextension = boxextension or 'xsc'
-        
+
         # Work on step. If not given, fetch last completed production step.
         step = step or replica.lastCompletedProductionStep()
-        
+
         # Fetch file and read last line to get box side length
         fname = replica.mdoutfiletemplate.format(step=step, extension=boxextension)
         fname = osp.join(replica.path, replica.mdfolder, fname)
         if not os.path.exists(fname):
             self.log.error("No file found with name %s to fetch box volume in DG0 penalty calculation. Returning no penalty..."%fname)
             return False
-        
+
         # Read file and fetch 3 vectors to calculate volume
         box = list(map(float, open(fname,'r').readlines()[2].strip().split()))
         vec_a = npy.array(box[1:4]).astype(float)
@@ -556,30 +556,30 @@ class Test(BT.BiskitTest):
         """Create new replica and write MDinput"""
         from .MDSettings import MDSettings
         from .Systems import SolvatedSystem
-        
+
         top = osp.join(T.testRoot('pep', 'pep.prmtop'))
         crd = osp.join(T.testRoot('pep', 'pep.prmcrd'))
         sys = SolvatedSystem(name='pep',top=top, crd=crd)
         settings = MDSettings(solvent='WAT',mdProgram='NAMD',restrMode='HA', restrForce=0.1)
-        
+
         self.testdir =  T.tempDir()
         self.r1 = sys+settings
         self.r1.setName('testNAMD')
-        
+
         T.BROWSER.chdir(self.testdir)
-        
+
         # write replica folder and check methods of AmberWriter
         self.r1.createFolder()
         self.r1.createMDInput()
         writer = NAMDWriter(self.r1)
-        
+
 #        self.assertEqual(writer.getAmberRestrMask(), ':1-8 & !@H=')
 #        self.assertTrue(writer.writeCommands())
 #        self.assertTrue(writer.writeReplicaInput())
 #        self.assertEqual(writer.getReplicaCommands(), checkCommands)
-        
+
         self.testdir += os.sep+'testNAMD'
-    
+
     def cleanUp(self):
         T.tryRemove( self.testdir, tree=1 )
 

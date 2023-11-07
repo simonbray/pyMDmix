@@ -580,7 +580,7 @@ class Test(BT.BiskitTest):
         print((parser.parse()))
         parser.result = {}
         print((parser.parse(keepsections=True)))
-        
+
     def cleanUp(self):
         if self.f_out: T.tryRemove( self.f_out, tree=1 )
 

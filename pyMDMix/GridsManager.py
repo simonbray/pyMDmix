@@ -72,7 +72,7 @@ class Grid(GridData.GridData):
                 self.getTypeFromPath(fname)
         if type: self.setType(type)
         if probe: self.setProbe(probe)
-    
+
     def setType(self, type, info=False):
         if type in S.GRIDTYPES:
             self.type = type
@@ -88,7 +88,7 @@ class Grid(GridData.GridData):
             maskout     (float) If given, remove all points with this value from percentile calculation
         Returns:
             float. Cutvalue.
-            
+
         Example:
             >> grid.getPercentileCutValue(0.1)
             >> -1.5
@@ -123,7 +123,7 @@ class Grid(GridData.GridData):
         "Change probe name and adapt header info"
         self.probe = probe
         self.setHeader()
-    
+
     def getProbeFromHeader(self):
         "Fetch probe info in header. It should be the second word in the line."
         if self.header is None:
@@ -132,7 +132,7 @@ class Grid(GridData.GridData):
 
         self.probe = self.header.split()[1]
         return self.probe
-        
+
     def getProbeFromName(self, fname):
         """Fetch the probe from grid name. It should be the last two words before the file extension.
         Only called if getProbeFromHeader does not work."""
@@ -145,7 +145,7 @@ class Grid(GridData.GridData):
         else: self.headerinfo = info
         self.typeheader = self.type+' '+self.probe
         self.typeheader+= ' '+info
-    
+
     def getMinIndex(self):
         """
         Get the grid indices for the minimum energy value(s).
@@ -154,14 +154,14 @@ class Grid(GridData.GridData):
         """
         mins = npy.where(self.data == self.data.min())
         return npy.vstack(mins).T
-        
+
     def writeDX(self, outname):
         "Overwrite gr.writeDX function to include file existance checking."
         GridData.GridData.writeDX(self, outname, self.typeheader)
         if not os.path.exists(outname):
             return False
         return True
-    
+
     def writeXPLOR(self, outname):
         "Overwrite gr.writeXPLOR function to include file existance checking."
         GridData.GridData.writeXPLOR(self, outname, self.typeheader)
@@ -203,7 +203,7 @@ class NewGrid(Grid):
         shape = (dimensions/spacing).astype(int)
         Grid.__init__(self, fname=None, probe=probe, type=type, shape=shape,
                                     origin=origin, spacing=spacing, *args, **kwargs)
-        
+
 
 class GridSpace(object):
     "Set of Grid objects belonging to the same simulated structure. \
@@ -253,9 +253,9 @@ class GridSpace(object):
     def addDegeneracy(self, probeDegeneracyDict):
         """Add more probes to the same dimension(s). Useful to redirect probes
         we are missing and assign to a similar chemical type: eg. redirect aromatics to hydrophobics.
-        
+
         probeDegeneracyDict:    dictionary with the form {existingProbe: [newProbeName, newProbename,...],...}
-        
+
         No return, just modification of self.probeMapping
         """
         self.__buildMapping()   # Rebuild clean mapping from loaded grids
@@ -348,8 +348,8 @@ class GridSpace(object):
                 for i in d:
                     if i not in map_dict:
                         if isinstance(n, list):
-                        	map_dict[i] = n
-			else: map_dict[i] = [n]
+                            	map_dict[i] = n
+                        else: map_dict[i] = [n]
                     else:
                         if isinstance(n, list): [map_dict[i].append(e) for e in n]
                         else: map_dict[i].append(n)
@@ -357,9 +357,9 @@ class GridSpace(object):
                 i = d
                 if i not in map_dict:
                     if isinstance(n, list):
-                    	map_dict[i] = n
-		    else: 
-			map_dict[i] = [n]
+                        	map_dict[i] = n
+                    else: 
+                        map_dict[i] = [n]
                 else:
                     if isinstance(n, list): [map_dict[i].append(e) for e in n]
                     else: map_dict[i].append(n)
@@ -419,19 +419,19 @@ class GridSpace(object):
         self.__buildMapping()
         self.__buildReverseMapping()
         return True
-    
+
     def getValues(self, coord, name=None, ndim=None, cross=False, ownF=False, ignoreValue=False,
                     choose='min', r=None, mode=None):
         """Return grid value at point indicated by cartesian coordinates 'coord'.
          'name' or number of the dimension ('ndim') must be given to identify what grid to use.
-         
+
          'name' can be either a List or a string. If a list is given, the value returned will be
          the 'choose' function of the two independent values of each element in the list. Same to 'ndim' with ints.
          'choose' options:
             - min   str       min of the values
             - max   str       max of the values
             - False bool      return all values
-            
+
          Optionally, if 'cross' is True, values will be returned for all the dimensions (grids).
          'ownF' can be a function to operate over the data points extracted, as if it was mean, boltz or whatever.
          'ownF' overrides 'mode' and is always used over the values closer to 'r'.
@@ -442,7 +442,7 @@ class GridSpace(object):
             - boltz     Return the boltzman average of all values around 'r' angs from 'coord'.
             - min       Return MIN value of all values 'r' around 'coord'.
             - max       Return MAX value of all values 'r' around 'coord'.
-        
+
         'ignoreValue' allows the specification of any value that should be ignored when computing the values.
         For instance, if we have protein occupied voxels with 999, those values will be ignored for computing 
         averages, min, etc... functions.
@@ -508,11 +508,11 @@ class GridSpace(object):
                 p = self._vals(idx, ndim, radii=0)                
             else:
                 p = npy.array([self._vals(idx, d, radii=0) for d in ndim])
-            
+
             p = p.reshape((len(ndim),))
             if ignoreValue and p==ignoreValue: p = 0
             return p
-            
+
         # CHOOSE PROCESSING MODE
         elif mode == 'avg':
             process = npy.mean
@@ -661,7 +661,7 @@ class GridSpace(object):
         if radii != 0. Finally, if dim is False, return the values for all the grids (CROSS)."
         if radii: points = self.container.getRadialIndices(radii, point=index)
         else: points = [index]
-        
+
         vals = []
         if dim is not False:
             space = self.gspace[:,:,:,dim]
@@ -671,7 +671,7 @@ class GridSpace(object):
                 space = self.gspace[:,:,:,dim]
                 [vals.append(space[tuple(ind)]) for ind in points]
         return npy.array(vals)
-    
+
     def toIndex(self, xyz):
         return self.container.getIndex(xyz)
 
@@ -767,7 +767,7 @@ def getEnergyFromPDBCoords(grid, pdbfile, forceradius=0, temp=300.):
     coords = pdb.xyz
     if forceradius: rads = forceradius
     else: rads = pdb['temperature_factor']
- 
+
     # Fetch results
     return getEnergyValues(grid, coords, rads, temp=temp)
 
@@ -779,10 +779,10 @@ def gridDifference(grid1, grid2, outname):
 #        print g1.shape, g2.shape
 #        print g1.origin, g2.origin
         g1 = g1.trim(g2)
-    
+
     g1.data[g1.data>0] = 0
     g2.data[g2.data>0] = 0
-    
+
     diffdata = g1.data - g2.data
     outg = g2.copy()
     outg.update(diffdata)
@@ -801,7 +801,7 @@ def gridSum(grid1, grid2, outname):
 #        print g1.shape, g2.shape
 #        print g1.origin, g2.origin
         g1 = g1.trim(g2)
-    
+
     sumdata = g1.data + g2.data
     outg = g2.copy()
     outg.update(sumdata)
@@ -815,33 +815,33 @@ def gridSum(grid1, grid2, outname):
 def trim(*Glist):
     """
     Trim all grids in Glist.
-    
+
     :arg list Glist: List containing more than 1 Grid instances to crop.
     :returns: a list of trimmed grid instances
     """     
     if len(Glist)<2:
         if type(Glist[0]) is list:
-          Glist = Glist[0]
+            Glist = Glist[0]
         else:
-          return "ERROR. Must provide at least 2 grids."
-        
+            return "ERROR. Must provide at least 2 grids."
+
     deltaList = npy.array( [grid.delta for grid in Glist] )
-    
+
     if npy.any(deltaList != deltaList[0]): 
-      return "ERROR. All grids should have same spacing."
-    
+        return "ERROR. All grids should have same spacing."
+
     delta = deltaList[0]
     originList = npy.array( [grid.origin for grid in Glist] )
     maxCoordList = npy.array( [grid.getCartesian(grid.data.shape) for grid in Glist] )
-    
+
     #Get maximum Origin and Cartesian Coordinates for minimum shape
     newOrigin = originList.max(axis=0)
     newMaximum = maxCoordList.min(axis=0)
     newShape = ( newMaximum - newOrigin ) / delta
     newShape.astype('int')
-    
+
     trimmedList = []
-    
+
     for grid in Glist:
         newarray = Grid(shape=newShape, origin=newOrigin, spacing=delta)
         newarray.source = 'Trimmed array of %s'%(grid.source)
@@ -853,7 +853,7 @@ def trim(*Glist):
         if hasattr(grid, 'probe'): newarray.setProbe(grid.probe)
         else: newarray.setProbe('UNK_UNK')
         trimmedList.append(newarray)
-        
+
     return trimmedList
 
 def similarity(gridList, percentile=0.02, hardcutoff=False, comparepositive=False, ignoreValue=False):
@@ -861,13 +861,13 @@ def similarity(gridList, percentile=0.02, hardcutoff=False, comparepositive=Fals
     Compute similarity index between grids in gridList. First grids are discretized to 1 and 0. 1 for points
     below certain cutoff (or above if comparepositive is True). The cutoff can be dynamic with a percentile
     calculation or stablished by the user as a hard cutoff.
-    
+
     Will use a modified Tanimoto Index to evaluate similarity. This version takes 
     into acount neighbouring positions (expanded grid) to allow some flexibility 
     and reduce noise introduced by the grid spacing.
-    
+
     SimIndex = (Nab + Na'b + Nab' + Na'b') / (Na + Nb + Na'b' + (Na'b/2) + (Nab'/2) - Nab)
-    
+
     a' = expanded a without original points. Thus only expansion.
     b' = expanded b without 1s in b
     Na = Ones in original A
@@ -875,19 +875,19 @@ def similarity(gridList, percentile=0.02, hardcutoff=False, comparepositive=Fals
     Nab = Ones common in A and B        
     Na'b = Ones in common in expansion of A and original B
     etc...
-    
+
     :arg list gridList: List of grid instances or path to files to be compared.
     :arg float percentile: Percentile of points to convert to 1.
     :arg float hardcutoff: Ignore percentile calculation and use this hard cutoff to assign 1 and 0.
     :arg bool comparepositives: Compare negative or positive points? By default use negative tail.
     :arg float ignoreValue: Value to ignore during cutoff and comparison calculation. E.g. 999 masking excluded volume.
-    
+
     :return: Redundant similarity matrix.
     """
     import itertools
-    
+
     if not isinstance(gridList, list): raise AttributeError("Expected gridList of type list. Got %s instead."%(type(gridList)))
-    
+
     # Parse each list element to check if it is a Grid instance or a file to be loaded
     grids = []
     for el in gridList:
@@ -898,27 +898,27 @@ def similarity(gridList, percentile=0.02, hardcutoff=False, comparepositive=Fals
             else: raise AttributeError("Element in list is not a valid file path or a Grid instance: %s"%el)
         else:
             raise AttributeError("Wrong list element type: %s %s"%(el, type(el)))
-    
+
     # Trim Grids if necessary
     grids = trim(grids)
     ngrids = len(grids)
-    
+
     # Mask out ignoreValues if needed
     if ignoreValue:
         ignoreMasks = [g.data != ignoreValue for g in grids]
-        
+
     # Invert data if comparepositive
     if comparepositive:
         if hardcutoff: hardcutoff *= -1
         for g in grids: g.data *= -1
-    
+
     # Compute cutoffs if needed
     # Convert to zeros and ones
     if not hardcutoff:         
         cutoffs = [g.getPercentileCutValue(percentile, ignoreValue) for g in grids]
     else:
         cutoffs = [hardcutoff]*len(grids)
-        
+
     for i,g in enumerate(grids):
         m = g.data <= cutoffs[i]
         g.data[m] = 1
@@ -938,14 +938,14 @@ def similarity(gridList, percentile=0.02, hardcutoff=False, comparepositive=Fals
         # and save
         tmpg.data -= g.data
         expanded_grids.append(tmpg)
-    
+
     data = npy.zeros((ngrids,ngrids))
     # Compare 
     for combi in itertools.combinations(npy.arange(ngrids), 2):
         i, j = combi
         gi, gj = grids[i].data, grids[j].data
         gi_, gj_ = expanded_grids[i].data, expanded_grids[j].data
-        
+
         A = gi.sum()
         B = gj.sum()
         A_ = gi_.sum()
@@ -954,9 +954,9 @@ def similarity(gridList, percentile=0.02, hardcutoff=False, comparepositive=Fals
         A_B = (gi_*gj).sum()
         AB_ = (gi*gj_).sum()
         A_B_ = (gi_*gj_).sum()
-        
+
         data[i,j] = (AB + A_B + AB_ + A_B_)/float(A + B + A_B_ + (A_B/2.) + (AB_/2.) - AB)
-    
+
     # Recompose full matrix
     # and return
     data += data.T
@@ -965,4 +965,4 @@ def similarity(gridList, percentile=0.02, hardcutoff=False, comparepositive=Fals
 
 if __name__ == "__main__":
     print("Testing GridSpace and Grid")
-    
+

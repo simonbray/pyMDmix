@@ -39,7 +39,7 @@ class Analyze(Command):
         residence_parser.add_argument("--hpid", "-id", action="store", type=int, dest="hpid", help="Hotspot ID in HPFILE to define region to study.")
         residence_parser.add_argument("--center", "-ce", nargs='+', dest="center", help="Sphere center to define region to study. Give a space separated 3 float list.")
         residence_parser.add_argument("--tol", "-t", default=0.5,type=float,dest="tolerance", help="Tolerance in angstroms around sphere center or hotspot coordinates to consider as occupied space. (default: 0.5)")
-        
+
 
         # ANALYSYS: ALIGN
     #    anl_commands = anl_parser.add_subparsers(help='Analysis commands', dest='anl_command')
@@ -50,7 +50,7 @@ class Analyze(Command):
         align_parser.add_argument("--ref", action="store", dest="ref", help="Path to reference PDB file. By default, pyMDmix generates one automatic reference pdb file which can be found inside each replica folder. This option will override it.")
         align_parser.add_argument("--only-write", action="store_true", default=False, dest="onlywrite", help="Only write ptraj input scripts BUT don't execute them. Useful when manual editing is needed. (default: False)")
         align_parser.add_argument("--only-exe", action="store_true", default=False, dest="onlyexe", help="Only execute existing ptra scripts, do not overwrite them. If scripts don't exist, this function will fail. (Default: False)")
-        
+
         # In conversion from density to grids, allow also merging of densities between replicas before energy conversion
         energy_parser = self.subparseronreplica(anl_cmd, 'energy', help="Calculate free energy maps from density grids for selected probes and replicas", extras=False)
         energy_parser.add_argument("-nsnaps", action="store", dest="nsnaps", type=int, help="If given, use this number of snapshots for calculating the expected number instead of the total number. Useful when a subset of the trajectory is analyzed.")
@@ -65,7 +65,7 @@ class Analyze(Command):
         # ANALYSYS: Hotspots
         hs_parser = anl_cmd.add_parser("hotspots", help="Analysis tools on hot spots")
         hs_cmd = hs_parser.add_subparsers(help='Hot spots analysis commands', dest='hs_command')
-        
+
         createhs = hs_cmd.add_parser("create", help="Create hot spots sets from selected grids using cutoff clustering method")
         createhs.add_argument("-i", action="store", dest="ingrids", required=True, nargs='+', help="List of grid files to use for hotspots creation. If multiple probes are given, a hot spot set with the minimum energy probes is obtained.")
         createhs.add_argument("-o", action="store", required=True, dest="outprefix", help="Output prefix. A PDB with the hotspots and a pickle file will be saved")
@@ -74,7 +74,7 @@ class Analyze(Command):
         createhs.add_argument("-p", action="store", dest="percentile", default=0.02, help="Percentile of points to use for establishing the cutoff value. Default: 0.02")
         createhs.add_argument("-x", action="store", dest="ignore", type=float, help="Ignore points with this value during percentile calculation. Useful when grids have values masking certain regions in space (like 999 to mask protein space).")
         createhs.add_argument("--hardcutoff", "-H", default=False, type=float, action="store", dest="hardcutoff", help="Stablish a hard energy cutoff instead of the adaptive one.")
-        
+
         createhs_min = hs_cmd.add_parser("create_min", help="Create hot spots sets from selected grids using Minima Search method")
         createhs_min.add_argument("-i", action="store", dest="ingrids", required=True, nargs='+', help="List of grid files to use for hotspots creation. If multiple probes are given, a hot spot set with the minimum energy probes is obtained.")
         createhs_min.add_argument("-o", action="store", required=True, dest="outprefix", help="Output prefix. A PDB with the hotspots and a pickle file will be saved")
@@ -94,7 +94,7 @@ class Analyze(Command):
                 onlywrite = parserargs.onlywrite
                 onlyexe = parserargs.onlyexe
                 reference = parserargs.ref
-                
+
                 if onlywrite or onlyexe:
                     # Options for partial execution selected
                     if onlywrite:
@@ -136,7 +136,7 @@ class Analyze(Command):
             includeCOM=parserargs.com
             onlyCOM=parserargs.onlycom
             ref=parserargs.ref
-            
+
             if replicas:
                 anal = pyMDMix.Analysis.ActionsManager(ncpus=ncpus)
                 anal.addReplicas(replicas)
@@ -145,7 +145,7 @@ class Analyze(Command):
                                 includeCOM=includeCOM, onlyCOM=onlyCOM, stepselection=nanosel,
                                 reference=ref)
                 anal.run(stepselection=nanosel, framestep=step)
-            
+
             print("DONE")
 
         elif parserargs.anl_command == 'residence':
@@ -165,14 +165,14 @@ class Analyze(Command):
                 inhset = pickle.load(open(hotspotfile,'rb'))
                 hotspot = inhset.getHSbyID(hselection)
                 if not hotspot: raise MDMixError("No hotspot selected.")
-                
+
             elif center:
                 # Study residence at a hotspot defined by sphere and radius
                 center = numpy.array(center,dtype=float)
             else:
                 raise MDMixError("To do a residence analysis, the spot to study must be defined either with a sphere giving a center+tolerance \
                                     or by giving a hotspot pickled file and an ID identifying the hotspot to use.")
-                
+
             if replicas:
                 anal = pyMDMix.Analysis.ActionsManager(ncpus=ncpus)
                 anal.addReplicas(replicas)
@@ -207,10 +207,10 @@ class Analyze(Command):
                 hardcutoff = parserargs.hardcutoff
                 centroid = parserargs.centroid
                 maskcutvalue = parserargs.ignore
-                
+
                 for g in ingrids:
                     if not os.path.exists(g): raise MDMixError("File %s not found."%g)
-                
+
                 import pyMDMix.HotSpotsManager as HM
                 if centroid: centroid = 'avg'
                 else: centroid = 'min'
@@ -224,10 +224,10 @@ class Analyze(Command):
                 cancelradius = parserargs.cancelradius
                 ignorevalue = parserargs.ignoreval
                 cutoff = parserargs.cutoff
-                
+
                 for g in ingrids:
                     if not os.path.exists(g): raise MDMixError("File %s not found."%g)
-                
+
                 import pyMDMix.HotSpotsManager as HM
                 HM.createHotSpotsByMinSearch(ingrids, cutoff, outprefix=outprefix, meanradius=meanradius, 
                                             cancelRadius=cancelradius, protValue=ignorevalue)

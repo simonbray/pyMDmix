@@ -86,15 +86,15 @@ class Residue(object):
     def __str__(self):
         s = "RESIDUE NAME: {name}\nATOMS: {atoms}"
         return s.format(**self.__dict__)
-    
+
     def __eq__(self, other):
         "Compare this to other by name"
         if isinstance(other, Residue): other=other.name
         return self.name == other
-    
+
     def center(self):
         return self.xyz.mean(axis=0)
-    
+
     def setxyz(self, xyz):
         "Set new coordinates"
         if xyz.shape == self.xyz.shape:
@@ -119,7 +119,7 @@ class Probe(object):
         "Compare this to other by name"
         if isinstance(other, Probe): other=other.name
         return self.name == other
-    
+
     def __repr__(self):
         return self.name
 
@@ -131,11 +131,11 @@ class Probe(object):
         for i, at in enumerate(self.residue.atoms):
             if at.name in self.atoms: mask[i] = 1
         return mask.astype(bool)
-    
+
     def istype(self, type):
         "Check if current replica has assigned type *type*"
         return type in self.type
-    
+
 
 
 if __name__ == "__main__":
