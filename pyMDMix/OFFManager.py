@@ -316,7 +316,9 @@ class OFFManager(object):
         import tempfile
         outname = tempfile.mktemp()
         self.tmpfile = outname
+        print('here6')
         open(outname, 'w').write(self.off)
+        print('here7')
         return outname
 
     def cleanTmp(self):

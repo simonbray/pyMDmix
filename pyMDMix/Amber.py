@@ -55,15 +55,22 @@ class AmberCreateSystemError(Exception):
 class Leaper(object):
     """Class to handle tLeap I/O"""
     def __init__(self,  objectFileName=None, extraff=[], cwd=None):
-        self.tleap = sub.Popen(S.AMBEREXE+os.sep+"tleap -f - ",  shell=True,   stdin = sub.PIPE,  stdout=sub.PIPE,  stderr=sub.PIPE, cwd=cwd)
+        #print('a')
+        #print(S.AMBEREXE)
+        self.tleap = sub.Popen(S.AMBEREXE+os.sep+"tleap -f -",  shell=True, bufsize=0,  stdin = sub.PIPE,  stdout=sub.PIPE,  stderr=sub.PIPE, cwd=cwd)  #, encoding='utf8')
         self._in = self.tleap.stdin
         self._out = self.tleap.stdout
         self._err = self.tleap.stderr
+        #print('0')
         self._setterminator = 'mdmix_terminator_command = "mdmix_terminator_command"'
         self._terminator = 'desc mdmix_terminator_command'
+        #print('0')
         self.command(self._setterminator)
+        #print('0')
         if objectFileName: self.command('loadOff %s'%(objectFileName))
+        #print('0')
 
+        #print('1')
         # Load default and required forcefields
         ff = extraff
         for f in ff:
@@ -79,9 +86,15 @@ class Leaper(object):
         tLeap is a bit tricky to be controlled by stdin, it terminates when it reaches EOF.
         Thus we use a fake command to detect the last line before EOF.
         """
-        self._in.write(command+'\n')
+        self._in.write((command+'\n\n').encode())
+        #self.tleap.communicate(input=(command+'\n\n').encode())
+        #print('1')
+        #print(command)
         logging.getLogger("AmberTleap").debug(command)
-        self._in.write(self._terminator+'\n')
+        #print('1')
+        self._in.write((self._terminator+'\n').encode())
+        #self.tleap.communicate(input=(self._terminator+'\n').encode())
+        #print('1')
         return self.flush()
         #self._in.write('lastCommandOut\n')
         #out = []
@@ -91,7 +104,7 @@ class Leaper(object):
             #if 'ERROR: syntax error' in line: break
             #if 'Error from the parser: syntax error' in line: break
             #if 'Exiting LEaP' in line:
-            #    logging.getLogger("AmberTleap").debug(line)
+            #    logging.metLogger("AmerTleap").debug(line)
             #    break    
 
     def flush(self):
@@ -101,7 +114,9 @@ class Leaper(object):
         #for line in self._out.readline().splitlines():
             #line = line.strip()
             #if not line: break
-            line = self._out.readline().strip()
+            line = self._out.readline().strip().decode()
+            #print(line)
+            #print(self.tleap.returncode)
             if 'mdmix_terminator_command' in line:
                 logging.getLogger("AmberTleap").debug(line)    
                 done = True
@@ -146,7 +161,6 @@ class AmberCreateSystem(object):
 
         # Set replica
         self.workOnReplica(replica)
-
         # Pipe all information to debug mode if informative=False
         if not informative:
             self.log.info = self.log.debug
@@ -168,7 +182,9 @@ class AmberCreateSystem(object):
 
     def initLeap(self):
         "Initialize leap interface loading chosen forcefields and solvents library"
+        #print(1)
         self.leap = Leaper()
+        #print(0)
         self.log.debug("Initializing Leap...")
         for ff in self.FFlist:
             self.log.debug(ff)
@@ -224,8 +240,11 @@ class AmberCreateSystem(object):
             return False
 
     def loadOff(self, objectFile):
+        #print('here8')
         if not self.leap: self.initLeap()
+        #print('here9')
         self.leap.command("loadOff %s"%objectFile)
+        #print('herei5')
         self.amberOFF = objectFile
         self.log.debug("Loaded off file %s into Leap"%objectFile)
         return True
@@ -271,6 +290,7 @@ class AmberCreateSystem(object):
         if not self.leap: self.initLeap()
         out = self.leap.command("charge %s"%unit)
         self.log.debug(out)
+        print(out)
         return float(out[0].split()[-1])
 
     def neutralizeWNaCl(self, unit):
@@ -511,7 +531,7 @@ class AmberCheck(object):
         :type replica: :class:`~Replicas.SolvatedReplica`
         :args bool warn: Print warnings when a file is not found or is incomplete.
         """
-        self.log = logging.getLogger("AmberCheck")
+        self.log = None #logging.getLogger("AmberCheck")
         self.replica = replica
         self.warn = warn
 

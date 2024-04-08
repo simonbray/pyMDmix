@@ -106,7 +106,7 @@ def main():
     client.run()
 
 if __name__ == "__main__":
-    try: 
+    if True: #try: 
         main()
-    except KeyboardInterrupt: print("Forcing MDMix UI exit!")
+    #except KeyboardInterrupt: print("Forcing MDMix UI exit!")
     sys.exit(0)
