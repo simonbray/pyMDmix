@@ -63,10 +63,9 @@ class SystemConfigFileParser(object):
         ########################################################################
 
         try:
-            fileSection = dict(self.__configHandle.items('SYSTEM'))
+            fileSection = {k: v.split('#')[0].strip() for k, v in self.__configHandle.items('SYSTEM')}
         except:
             raise SystemParserError("Section SYSTEM missing.")
-
         parms = {} # Store parameters to be passed to System
 
 #        projName = fileSection.get('projname', None)
@@ -151,7 +150,7 @@ class MDSettingsConfigFileParser(object):
             return replInfo
 
         # Else treat the string
-        string = string.strip()
+        string = string.split('#')[0].strip()
         tempD = {}
         if ',' in string:
             split = string.split(',')
@@ -219,7 +218,7 @@ class MDSettingsConfigFileParser(object):
         # Split in parts and divide name:value
         # format: NREPL = 3, WAT:1, ETA:6
         temp_replInfo = {}
-        string = string.strip()
+        string = string.split('#')[0].strip()
         if ',' in string:
             split = string.split(',')
             for piece in split:
@@ -277,7 +276,7 @@ class MDSettingsConfigFileParser(object):
             solvents = fileSection.get('solvents') or fileSection.get('solvent')
             if not solvents: raise MDSettingsParserError("SOLVENT(S) option missing in replica config file.")
             print(0)
-            solvents = [el.strip() for el in solvents.split(',')]
+            solvents = [el.strip() for el in solvents.split('#')[0].split(',')]
             self.__checkSolventList(solvents)
             self.solvents = solvents
 
@@ -340,6 +339,7 @@ class MDSettingsConfigFileParser(object):
             for k,v in list(fileSection.items()):
                 if v is None: continue
                 if k in mainopts: continue
+                v = v.split('#')[0].strip()
                 # Will try to do fuzzy comparison to identify what config parameter should be modified
                 # to give some flexibility to the user (specially for case matching
                 bestmatch = difflib.get_close_matches(k, settingKeys, 1, 0.8)
@@ -347,7 +347,6 @@ class MDSettingsConfigFileParser(object):
                     setting = m.settings[bestmatch[0]]
                     extracfg.update({setting.name:setting.vtype(v)})
                 else: raise MDSettingsParserError("Attribute %s not present in md-settings. Make sure the spelling is correct"%k)
-
             for solv, nrepl in list(self.solv_nrepl.items()):
                 for i in range(1, nrepl+1):
                     replicaRestrMode = splitedRestr[solv][i]
