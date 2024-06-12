@@ -48,10 +48,10 @@ if DISABLE_BISKIT_LOADING_WARNS:
 
 from biskit.tools import *
 
-class InvalidPath( ToolsError ):
+class InvalidPath(Exception):
     pass
 
-class InvalidBinary( ToolsError ):
+class InvalidBinary(Exception):
     pass
 
 
