@@ -121,6 +121,7 @@ class SolvatedPDB(bi.PDBModel):
     def setSoluteSolventMask(self):
         "When missing residues, only accept as part of the system those present in acceptList or in EXTRARESIDUES file.\
          Waters are always removed as this is intended for generating a refernce pdb and for masking issues."
+
         self.soluteMask = self.maskProtein() + self.maskNA() + \
                         self.maskFrom('residue_name', self.extraResidues) + self.maskFrom('residue_name', AMBER_RESNAMES)
         self.solventMask = ~self.soluteMask
@@ -307,7 +308,10 @@ class SolvatedPDB(bi.PDBModel):
 
     def getSolute(self):
         "Returns Prot or RNA or DNA (if present) in the system"
-        if not npy.any(self.soluteMask): self.setSoluteSolventMask()
+
+        if not npy.any(self.soluteMask):
+            self.setSoluteSolventMask()
+
         return self.compress(self.soluteMask)
 
     def removeWaters(self):

@@ -38,7 +38,7 @@ import os.path as osp
 import logging
 
 # Disable Biskit Loading warning
-DISABLE_BISKIT_LOADING_WARNS = True
+DISABLE_BISKIT_LOADING_WARNS = False
 if DISABLE_BISKIT_LOADING_WARNS:
     olderr = sys.stderr
     sys.stderr = open(os.devnull, 'wb')

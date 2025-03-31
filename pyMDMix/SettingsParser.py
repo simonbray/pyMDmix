@@ -69,7 +69,7 @@ class WriteCfgError(SettingsError):
     pass
 
 
-class CaseSensitiveConfigParser( configparser.SafeConfigParser ):
+class CaseSensitiveConfigParser( configparser.RawConfigParser ):
     """
     Change ConfigParser so that it doesn't convert option names to lower case.
     """
