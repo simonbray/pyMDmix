@@ -210,11 +210,8 @@ def parseSettingsConfigFile(settingsConfigFile, noSolvent=False):
     from .Parsers import MDSettingsConfigFileParser
 
     if not osp.exists(settingsConfigFile): raise BadFile("File %s not found."%settingsConfigFile)
-    print(0)
     if noSolvent: sets = MDSettingsConfigFileParser().parseNoSolvent(settingsConfigFile)
     else: sets = MDSettingsConfigFileParser().parse(settingsConfigFile)
-    print(0)
-    print(8)
     return sets
 
 

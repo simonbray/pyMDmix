@@ -145,15 +145,10 @@ class System(object):
     def __initCreate(self):
         if not self.create:
             from .Amber import AmberCreateSystem
-            print('here2')
             self.create = AmberCreateSystem(FFlist=self.FF, informative=False)
-            print('here3')
             if self.amberOFF:
-                print('here4')
                 tmpoff = self.amberOFF.writeTmp()
-                print('here5')
                 self.create.loadOff(tmpoff) # will write to temporary file location
-                print('here2')
                 self.amberOFF.cleanTmp()
 
     def __cleanCreate(self):

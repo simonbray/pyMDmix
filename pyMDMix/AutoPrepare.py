@@ -753,7 +753,6 @@ class AutoPrepare(object):
         else: raise AutoPrepareError("Input needed.")
 
         prepare = AmberCreateSystem()
-        print('here')
         prepare.createOFF(outname, inpdb, extraff=extraff, **kwargs)
         outoff = outname+'.lib'
 

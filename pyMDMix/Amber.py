@@ -55,22 +55,15 @@ class AmberCreateSystemError(Exception):
 class Leaper(object):
     """Class to handle tLeap I/O"""
     def __init__(self,  objectFileName=None, extraff=[], cwd=None):
-        #print('a')
-        #print(S.AMBEREXE)
-        self.tleap = sub.Popen(S.AMBEREXE+os.sep+"tleap -f -",  shell=True, bufsize=0,  stdin = sub.PIPE,  stdout=sub.PIPE,  stderr=sub.PIPE, cwd=cwd)  #, encoding='utf8')
+        self.tleap = sub.Popen(S.AMBEREXE+os.sep+"tleap -f -",  shell=True, bufsize=0,  stdin = sub.PIPE,  stdout=sub.PIPE,  stderr=sub.PIPE, cwd=cwd)
         self._in = self.tleap.stdin
         self._out = self.tleap.stdout
         self._err = self.tleap.stderr
-        #print('0')
         self._setterminator = 'mdmix_terminator_command = "mdmix_terminator_command"'
         self._terminator = 'desc mdmix_terminator_command'
-        #print('0')
         self.command(self._setterminator)
-        #print('0')
         if objectFileName: self.command('loadOff %s'%(objectFileName))
-        #print('0')
 
-        #print('1')
         # Load default and required forcefields
         ff = extraff
         for f in ff:
@@ -87,14 +80,8 @@ class Leaper(object):
         Thus we use a fake command to detect the last line before EOF.
         """
         self._in.write((command+'\n\n').encode())
-        #self.tleap.communicate(input=(command+'\n\n').encode())
-        #print('1')
-        #print(command)
         logging.getLogger("AmberTleap").debug(command)
-        #print('1')
         self._in.write((self._terminator+'\n').encode())
-        #self.tleap.communicate(input=(self._terminator+'\n').encode())
-        #print('1')
         return self.flush()
         #self._in.write('lastCommandOut\n')
         #out = []
@@ -115,8 +102,6 @@ class Leaper(object):
             #line = line.strip()
             #if not line: break
             line = self._out.readline().strip().decode()
-            #print(line)
-            #print(self.tleap.returncode)
             if 'mdmix_terminator_command' in line:
                 logging.getLogger("AmberTleap").debug(line)    
                 done = True
@@ -182,9 +167,7 @@ class AmberCreateSystem(object):
 
     def initLeap(self):
         "Initialize leap interface loading chosen forcefields and solvents library"
-        #print(1)
         self.leap = Leaper()
-        #print(0)
         self.log.debug("Initializing Leap...")
         for ff in self.FFlist:
             self.log.debug(ff)

@@ -132,9 +132,7 @@ class MDSettingsConfigFileParser(object):
 
     def __checkSolventList(self, l):
         "Check any of the solvent numbers given is diferent from de available ones"""
-        print('s')
         available = SolventManager().listSolvents()
-        print('s')
         missing = set(l) - set(available)
         if missing: raise BadSolvent("Solvent list invalid: %s"%missing)
         return True
@@ -266,21 +264,17 @@ class MDSettingsConfigFileParser(object):
         mdsections = [s for s in sections if s.startswith('MDSETTINGS')]
         nummdsections = len(mdsections)
         if not nummdsections: raise MDSettingsParserError("No sections found starting with MDSETTINGS name.")
-        print(0)
 
         # Visit all mdsettings sections
         for section in mdsections:
-            print(section)
             fileSection = dict(self.__configHandle.items(section))
 
             solvents = fileSection.get('solvents') or fileSection.get('solvent')
             if not solvents: raise MDSettingsParserError("SOLVENT(S) option missing in replica config file.")
-            print(0)
             solvents = [el.strip() for el in solvents.split('#')[0].split(',')]
             self.__checkSolventList(solvents)
             self.solvents = solvents
 
-            print(0)
             # Number of replicas for the solvents
             # In this version it is possible to specify different number of replicas for different solvents
             # If 1 int is given, all replicas share the same number
@@ -356,7 +350,6 @@ class MDSettingsConfigFileParser(object):
                     settingsInstances.append(MDSettings(solvent=solv, nanos=replicaNanos, restrMode=replicaRestrMode,
                                     restrForce=replicaRestrForce, temp=replicaTemp, restrMask=restrMask, alignMask=alignMask, **extracfg))
 
-        print(99)
         return settingsInstances
 
     def parseNoSolvent(self, configfile):
