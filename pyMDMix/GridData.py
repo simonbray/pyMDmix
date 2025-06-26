@@ -324,7 +324,7 @@ class GridData(object):
         :parm str header: Custom string (one line without breaks) to be introduced at the top of the file for identification. If false a predefined string will be writen.
         :parm bool gzip: Write file in gzipped form.
         """
-        if (self.data !='' and self.origin !='' and self.delta !=''):
+        if (self.data.size != 0 and self.origin.size != 0 and self.delta.size != 0):
             grid = self.data
             origin = self.origin
             delta = self.delta
@@ -357,7 +357,7 @@ class GridData(object):
             dxf.write('\n')
             dxf.close()
 
-        else: raise GridError("Data or parameters missing. Can't write DX File.")
+        else: raise GridDataError("Data or parameters missing. Can't write DX File.")
         
     def dump(self, dataname=None, varname=None):
         """

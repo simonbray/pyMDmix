@@ -241,7 +241,7 @@ class AmberCreateSystem(object):
         # original line:
         #command = '(%s -p %s < %s > %s) 1> %s 2> %s'%(S.AMBER_AMBPDB, top, crd, outpdb,null,null)
         # debug line:
-        command = '(%s -p %s < %s > %s) '%(S.AMBER_AMBPDB, top, crd, outpdb)
+        command = '(%s/%s -p %s < %s > %s) '%(S.AMBEREXE, S.AMBER_AMBPDB, top, crd, outpdb)
         self.log.debug(command)
         proc = sub.Popen(command, shell=True)
         exit_code = proc.wait()
